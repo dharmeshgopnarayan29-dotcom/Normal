@@ -29,12 +29,20 @@
 }
 
 @layer base {
+  html {
+    background: #0a0618;
+  }
   body {
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     color: var(--color-text-white);
+    background: #0a0618;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+  #root {
+    min-height: 100vh;
+    background: #0a0618;
   }
 }
 
@@ -47,12 +55,13 @@
   }
   .dashboard-bg::before {
     content: '';
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: rgba(15, 10, 35, 0.8);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     pointer-events: none;
+    z-index: 0;
   }
 
   /* === GLASS MIXIN CLASSES === */
@@ -426,24 +435,22 @@
     @apply bg-red-500/90 border-red-400 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] scale-110 rotate-90;
   }
   .modal-body {
-    @apply p-7 overflow-y-auto overflow-x-hidden flex-1 custom-scrollbar;
+    @apply p-7 overflow-y-auto overflow-x-hidden flex-1;
+  }
+  .modal-body::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  .modal-body::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .modal-body::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full;
+  }
+  .modal-body::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/30;
   }
   .modal-footer {
     @apply py-5 px-7 border-t border-white/10 bg-[rgba(20,10,35,0.4)] flex gap-3 justify-end shrink-0;
-  }
-  
-  /* Custom Scrollbar for Modal */
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply w-1.5;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/20 rounded-full border-2 border-transparent bg-clip-padding;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-white/30;
   }
 
   /* === TABLE === */

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { X, MapPin, Camera, Upload } from 'lucide-react';
+import { X, MapPin, Camera, Upload, Navigation, Map, CheckCircle2, AlertCircle } from 'lucide-react';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -21,62 +21,210 @@ const LocationPicker = ({ position, setPosition }) => {
     return position ? <Marker position={position} /> : null;
 };
 
-const MapUpdater = ({ mapCenter }) => {
+// Handles flyTo + invalidateSize when map becomes visible or center changes
+const MapController = ({ mapCenter, shouldInvalidate }) => {
     const map = useMap();
     useEffect(() => {
-        if (mapCenter) map.flyTo(mapCenter, 15);
+        if (mapCenter) {
+            // Small delay to let CSS transition finish before flying
+            const timer = setTimeout(() => {
+                map.invalidateSize();
+                map.flyTo(mapCenter, 16, { duration: 0.8 });
+            }, 50);
+            return () => clearTimeout(timer);
+        }
     }, [mapCenter, map]);
+
+    // Re-invalidate when the container resizes (expand/collapse animation)
+    useEffect(() => {
+        if (shouldInvalidate) {
+            const timer = setTimeout(() => map.invalidateSize(), 350);
+            return () => clearTimeout(timer);
+        }
+    }, [shouldInvalidate, map]);
+
     return null;
 };
 
+const DEFAULT_CENTER = [28.6139, 77.2090];
+
 const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({ title: '', description: '', category: 'roads' });
+    const [address, setAddress] = useState('');
     const [position, setPosition] = useState(null);
-    const [mapCenter, setMapCenter] = useState([28.6139, 77.2090]);
+    const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
     const [photo, setPhoto] = useState(null);
+    const [showMap, setShowMap] = useState(false);
+    const [mapReady, setMapReady] = useState(false); // tracks if map has been mounted at least once
+    const [locationStatus, setLocationStatus] = useState(null); // 'detecting' | 'success' | 'error'
+    const [locationError, setLocationError] = useState('');
+    const [submitError, setSubmitError] = useState('');
+    const [mapLocationError, setMapLocationError] = useState('');
+    const mapInvalidateKey = useRef(0);
 
+    // Reset state when modal opens
     useEffect(() => {
-        if (isOpen && "geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    setPosition(latlng);
-                    setMapCenter(latlng);
-                },
-                () => {}
-            );
+        if (isOpen) {
+            setFormData({ title: '', description: '', category: 'roads' });
+            setAddress('');
+            setPosition(null);
+            setMapCenter(DEFAULT_CENTER);
+            setPhoto(null);
+            setShowMap(false);
+            setMapReady(false);
+            setLocationStatus(null);
+            setLocationError('');
+            setSubmitError('');
+            setMapLocationError('');
         }
     }, [isOpen]);
 
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isOpen]);
+
+    // Reverse geocode helper
+    const reverseGeocode = async (lat, lng) => {
+        try {
+            const resp = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+                { headers: { 'User-Agent': 'CivicFix/1.0' } }
+            );
+            const data = await resp.json();
+            if (data.display_name) return data.display_name;
+        } catch (err) { /* silent */ }
+        return '';
+    };
+
     const handleGetLocation = () => {
+        if (!("geolocation" in navigator)) {
+            setLocationError("Geolocation is not supported by your browser.");
+            return;
+        }
+        setLocationStatus('detecting');
+        setLocationError('');
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setPosition(latlng);
+                setMapCenter([latlng.lat, latlng.lng]);
+                setLocationStatus('success');
+                setSubmitError('');
+
+                const resolved = await reverseGeocode(latlng.lat, latlng.lng);
+                if (resolved) setAddress(resolved);
+            },
+            () => {
+                setLocationStatus('error');
+                setLocationError("Location access denied. Please enter the address manually or select on the map.");
+            }
+        );
+    };
+
+    // "Show Map" button handler — requests location, centers map, then reveals it
+    const handleToggleMap = () => {
+        if (showMap) {
+            // Collapsing
+            setShowMap(false);
+            setMapLocationError('');
+            return;
+        }
+
+        // Expanding — determine the best center
+        setMapLocationError('');
+
+        // Priority: 1) existing position, 2) request device location, 3) fallback
+        if (position) {
+            setMapCenter([position.lat, position.lng]);
+            setShowMap(true);
+            setMapReady(true);
+            mapInvalidateKey.current += 1;
+            return;
+        }
+
+        // Try to get current location for centering
         if ("geolocation" in navigator) {
+            setLocationStatus('detecting');
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
+                async (pos) => {
                     const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     setPosition(latlng);
-                    setMapCenter(latlng);
+                    setMapCenter([latlng.lat, latlng.lng]);
+                    setLocationStatus('success');
+                    setSubmitError('');
+                    setShowMap(true);
+                    setMapReady(true);
+                    mapInvalidateKey.current += 1;
+
+                    const resolved = await reverseGeocode(latlng.lat, latlng.lng);
+                    if (resolved) setAddress(resolved);
                 },
-                () => alert("Unable to fetch location. Check browser permissions.")
+                () => {
+                    // Location denied — still open map with default center
+                    setLocationStatus(null);
+                    setMapLocationError("Couldn't access your current location. Please select the issue location manually on the map.");
+                    setShowMap(true);
+                    setMapReady(true);
+                    mapInvalidateKey.current += 1;
+                }
             );
+        } else {
+            // No geolocation API — open map with default
+            setMapLocationError("Geolocation is not available. Please select the issue location manually on the map.");
+            setShowMap(true);
+            setMapReady(true);
+            mapInvalidateKey.current += 1;
         }
+    };
+
+    // When user picks on map, reverse geocode the point
+    const handleMapPick = async (latlng) => {
+        setPosition(latlng);
+        setLocationStatus('success');
+        setSubmitError('');
+        setMapLocationError('');
+        const resolved = await reverseGeocode(latlng.lat, latlng.lng);
+        if (resolved) setAddress(resolved);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!position) return alert("Please pick a location on the map.");
+        setSubmitError('');
+
+        const hasAddress = address.trim().length > 0;
+        const hasCoords = position !== null;
+
+        if (!hasAddress && !hasCoords) {
+            setSubmitError("Please provide an address, use your current location, or select a location on the map.");
+            return;
+        }
 
         const data = new FormData();
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('category', formData.category);
-        data.append('lat', position.lat.toFixed(6));
-        data.append('lng', position.lng.toFixed(6));
         if (photo) data.append('photo', photo);
+
+        if (hasAddress) data.append('address', address.trim());
+        if (hasCoords) {
+            data.append('lat', position.lat.toFixed(6));
+            data.append('lng', position.lng.toFixed(6));
+        }
 
         onSubmit(data);
         setFormData({ title: '', description: '', category: 'roads' });
+        setAddress('');
         setPosition(null);
         setPhoto(null);
+        setShowMap(false);
+        setMapReady(false);
+        setLocationStatus(null);
     };
 
     if (!isOpen) return null;
@@ -86,18 +234,24 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
             <div className="modal-content">
                 <div className="modal-header">
                     <h2>Report a New Issue</h2>
-                    <button className="modal-close" onClick={onClose}><X size={20} /></button>
+                    <button className="modal-close" onClick={onClose}><X size={18} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
                     <div className="modal-body flex flex-col gap-4">
+
+                        {/* Title */}
                         <div className="form-group !mb-0">
                             <label className="text-text-white font-semibold mb-2">Issue Title</label>
                             <input className="input-field bg-[rgba(20,10,35,0.4)]" placeholder="e.g. Large Pothole on Main Street" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
                         </div>
+
+                        {/* Description */}
                         <div className="form-group !mb-0">
                             <label className="text-text-white font-semibold mb-2">Description</label>
                             <textarea className="textarea-field bg-[rgba(20,10,35,0.4)] resize-none" rows="3" placeholder="Describe the issue in detail..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
                         </div>
+
+                        {/* Category & Photo */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="form-group !mb-0">
                                 <label className="text-text-white font-semibold mb-2">Category</label>
@@ -114,27 +268,99 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                 <div className="relative w-full">
                                     <input type="file" id="photo-upload" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" onChange={e => setPhoto(e.target.files[0])} />
                                     <div className="flex items-center gap-2 w-full py-2.5 px-3.5 border border-white/15 rounded-custom-sm text-[0.9rem] text-text-white-soft bg-[rgba(20,10,35,0.4)] transition-all duration-200 hover:bg-[rgba(30,20,50,0.6)] hover:border-accent-to/50">
-                                        <Camera size={18} className="text-accent-to" />
+                                        <Camera size={18} className="text-accent-to shrink-0" />
                                         <span className="truncate">{photo ? photo.name : 'Upload an image...'}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="form-group !mb-0 shrink-0">
-                            <div className="flex justify-between items-center mb-3">
-                                <label className="text-text-white font-semibold !mb-0">Pick Location</label>
-                                <button type="button" onClick={handleGetLocation} className="flex items-center gap-1.5 py-1.5 px-3 text-[0.8rem] font-bold rounded-lg border-none bg-blue-500/20 text-blue-300 cursor-pointer transition-all duration-200 hover:bg-blue-500/30">
-                                    <MapPin size={14} /> Use My Location
+
+                        {/* ── Location Section ── */}
+                        <div className="form-group !mb-0">
+                            <div className="flex items-center gap-2 mb-3">
+                                <MapPin size={18} className="text-accent-to" />
+                                <label className="text-text-white font-bold text-[0.95rem] !mb-0">Location / Address of the Issue</label>
+                            </div>
+                            <p className="text-text-white-muted text-[0.8rem] mb-3 leading-relaxed">
+                                You can type the issue address even if you are not there, use your current device location, or pick the spot directly on the map.
+                            </p>
+
+                            {/* Address Input */}
+                            <input
+                                className="input-field bg-[rgba(20,10,35,0.4)] mb-3"
+                                placeholder="e.g. Near Main Road, 5th Cross, BTM Layout"
+                                value={address}
+                                onChange={e => { setAddress(e.target.value); setSubmitError(''); }}
+                            />
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2 flex-wrap mb-3">
+                                <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    disabled={locationStatus === 'detecting'}
+                                    className="flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border border-white/15 bg-blue-500/15 text-blue-300 cursor-pointer transition-all duration-200 hover:bg-blue-500/25 hover:border-blue-400/40 disabled:opacity-50 disabled:cursor-wait"
+                                >
+                                    <Navigation size={14} />
+                                    {locationStatus === 'detecting' ? 'Detecting...' : 'Use My Location'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleToggleMap}
+                                    disabled={locationStatus === 'detecting'}
+                                    className={`flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${showMap ? 'bg-accent-to/20 text-accent-to border-accent-to/40' : 'bg-white/5 text-text-white-soft border-white/15 hover:bg-white/10 hover:border-white/25'}`}
+                                >
+                                    <Map size={14} />
+                                    {showMap ? 'Hide Map' : 'Show Map'}
                                 </button>
                             </div>
-                            <div className="h-[180px] rounded-[16px] overflow-hidden border border-white/20 shadow-[inset_0_4px_20px_rgba(0,0,0,0.3)]">
-                                <MapContainer center={mapCenter} zoom={13} className="h-full w-full z-[1]">
-                                    <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-                                    <MapUpdater mapCenter={mapCenter} />
-                                    <LocationPicker position={position} setPosition={setPosition} />
-                                </MapContainer>
+
+                            {/* Location Status Messages */}
+                            {locationStatus === 'success' && (
+                                <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-green-500/10 border border-green-500/25 text-green-300 text-[0.8rem] font-medium mb-3">
+                                    <CheckCircle2 size={14} className="shrink-0" /> Current location detected successfully
+                                </div>
+                            )}
+                            {locationStatus === 'error' && locationError && (
+                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-[0.8rem] font-medium mb-3">
+                                    <AlertCircle size={14} className="shrink-0 mt-0.5" /> {locationError}
+                                </div>
+                            )}
+                            {mapLocationError && showMap && (
+                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[0.8rem] font-medium mb-3">
+                                    <AlertCircle size={14} className="shrink-0 mt-0.5" /> {mapLocationError}
+                                </div>
+                            )}
+
+                            {/* Map (Collapsible, large when visible) */}
+                            <div
+                                className={`rounded-[16px] overflow-hidden border border-white/20 shadow-[inset_0_2px_15px_rgba(0,0,0,0.25),0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 ease-in-out ${showMap ? 'h-[280px] sm:h-[340px] opacity-100 mb-1' : 'h-0 opacity-0 border-transparent shadow-none'}`}
+                            >
+                                {mapReady && (
+                                    <MapContainer center={mapCenter} zoom={16} className="h-full w-full z-[1]">
+                                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                        <MapController mapCenter={mapCenter} shouldInvalidate={mapInvalidateKey.current} />
+                                        <LocationPicker position={position} setPosition={handleMapPick} />
+                                    </MapContainer>
+                                )}
                             </div>
+
+                            {/* Coordinates indicator when position is set */}
+                            {position && (
+                                <div className="flex items-center gap-2 mt-2 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-[0.75rem] text-text-white-muted font-mono">
+                                    <MapPin size={12} className="text-accent-to shrink-0" />
+                                    {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
+                                </div>
+                            )}
                         </div>
+
+                        {/* Submit Error */}
+                        {submitError && (
+                            <div className="flex items-start gap-2 py-2.5 px-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-[0.85rem] font-medium">
+                                <AlertCircle size={16} className="shrink-0 mt-0.5" /> {submitError}
+                            </div>
+                        )}
+
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
