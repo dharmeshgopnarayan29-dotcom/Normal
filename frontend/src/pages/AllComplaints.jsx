@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../api';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import BorderGlow from '../components/BorderGlow';
 
 const AllComplaints = () => {
     const [issues, setIssues] = useState([]);
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => { fetchData(); }, []);
+
+    // Reset page to 1 when filters or search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter, search, issues.length]);
 
     const fetchData = async () => {
         try {
@@ -26,7 +34,20 @@ const AllComplaints = () => {
 
     const filtered = issues
         .filter(i => filter === 'all' || i.status === filter)
-        .filter(i => i.title.toLowerCase().includes(search.toLowerCase()) || i.reporter_name?.toLowerCase().includes(search.toLowerCase()));
+        .filter(i => i.title.toLowerCase().includes(search.toLowerCase()) || i.reporter_name?.toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedIssues = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const handleNext = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    };
+
+    const handlePrev = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
 
     return (
         <div className="dashboard-bg">
@@ -40,7 +61,7 @@ const AllComplaints = () => {
                 {/* Search + Filters */}
                 <div className="flex gap-4 mb-6 flex-wrap items-center">
                     <div className="relative flex-1 min-w-[200px]">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-white-muted" />
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                         <input className="input-field pl-9" placeholder="Search complaints..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <div className="tabs !mb-0">
@@ -53,7 +74,7 @@ const AllComplaints = () => {
                 </div>
 
                 {/* Table */}
-                <div className="table-container">
+                <BorderGlow className="table-container" borderRadius={24} edgeSensitivity={60} glowIntensity={0.6}>
                     <table>
                         <thead>
                             <tr>
@@ -65,14 +86,14 @@ const AllComplaints = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center p-8 text-text-white-muted">No complaints found</td></tr>
+                            {paginatedIssues.length === 0 ? (
+                                <tr><td colSpan="5" className="text-center p-8 text-slate-500">No complaints found</td></tr>
                             ) : (
-                                filtered.map(iss => (
+                                paginatedIssues.map(iss => (
                                     <tr key={iss.id}>
                                         <td>
                                             <div className="font-medium">{iss.title}</div>
-                                            <div className="text-[0.8rem] text-text-white-muted mt-0.5">{iss.description?.substring(0, 60)}...</div>
+                                            <div className="text-[0.8rem] text-slate-500 mt-0.5">{iss.description?.substring(0, 60)}...</div>
                                         </td>
                                         <td>{iss.reporter_name || 'Unknown'}</td>
                                         <td className="capitalize">{iss.category}</td>
@@ -91,7 +112,31 @@ const AllComplaints = () => {
                             )}
                         </tbody>
                     </table>
-                </div>
+                </BorderGlow>
+
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-6 glass !p-3 !rounded-[16px]">
+                        <button 
+                            onClick={handlePrev} 
+                            disabled={currentPage === 1}
+                            className={`flex items-center gap-2 py-2 px-4 rounded-xl text-[0.85rem] font-bold transition-all ${currentPage === 1 ? 'opacity-50 cursor-not-allowed text-slate-400 bg-slate-50 border border-slate-100' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+                        >
+                            <ChevronLeft size={16} /> Previous
+                        </button>
+                        
+                        <span className="text-[0.85rem] text-slate-500 font-medium">
+                            Page <strong className="text-slate-900">{currentPage}</strong> of <strong className="text-slate-900">{totalPages}</strong>
+                        </span>
+
+                        <button 
+                            onClick={handleNext} 
+                            disabled={currentPage === totalPages}
+                            className={`flex items-center gap-2 py-2 px-4 rounded-xl text-[0.85rem] font-bold transition-all ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed text-slate-400 bg-slate-50 border border-slate-100' : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+                        >
+                            Next <ChevronRight size={16} />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

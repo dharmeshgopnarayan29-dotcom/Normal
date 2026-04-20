@@ -89,9 +89,9 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
         <div>
             <div className="map-view-layout">
                 {/* Map */}
-                <div className="glass !p-0 overflow-hidden relative border border-white/15 rounded-custom shadow-[0_12px_40px_rgba(0,0,0,0.15)]">
-                    <div className="py-5 px-6 border-b border-white/10 bg-white/5">
-                        <h3 className="text-[1.1rem] font-bold text-text-white">Complaint Locations</h3>
+                <div className="glass !p-0 overflow-hidden relative border border-slate-200 rounded-custom shadow-sm">
+                    <div className="py-5 px-6 border-b border-slate-200 bg-white">
+                        <h3 className="text-[1.1rem] font-bold text-slate-900">Complaint Locations</h3>
                     </div>
                     <div className="h-[550px] relative">
                         <MapContainer center={center} zoom={13} className="h-full w-full z-[1]">
@@ -126,8 +126,8 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
                         )}
 
                         {/* Priority Legend */}
-                        <div className="priority-legend absolute bottom-5 left-5 z-[400] bg-[rgba(15,10,35,0.85)] backdrop-blur-[16px] rounded-[16px] p-4 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
-                            <h4 className="text-[0.85rem] font-bold mb-2.5 text-text-white">Priority Levels</h4>
+                        <div className="priority-legend absolute bottom-5 left-5 z-[400] bg-slate-100/90 rounded-[16px] p-4 border border-slate-200 shadow-md backdrop-blur-sm">
+                            <h4 className="text-[0.85rem] font-bold mb-2.5 text-slate-900">Priority Levels</h4>
                             <div className="legend-item"><div className="legend-dot bg-red-500"></div> Immediate</div>
                             <div className="legend-item"><div className="legend-dot bg-orange-500"></div> High</div>
                             <div className="legend-item"><div className="legend-dot bg-yellow-500"></div> Medium</div>
@@ -140,8 +140,8 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
                 <div className="map-panel flex flex-col gap-6">
                     
                     {/* Area Summary / Nearby Insights Panel */}
-                    <div className="area-summary bg-white/5 backdrop-blur-[10px] border border-white/15 rounded-custom p-6 shadow-[0_12px_30px_rgba(0,0,0,0.15)]">
-                        <h3 className="text-[1.1rem] font-bold mb-5 text-text-white">
+                    <div className="area-summary bg-slate-100 border border-slate-200 rounded-custom p-6 shadow-sm">
+                        <h3 className="text-[1.1rem] font-bold mb-5 text-slate-900">
                             Nearby Insights {userLocation && <span className="font-normal opacity-70 text-[0.85rem]"><br/>({userLocation.name})</span>}
                         </h3>
                         
@@ -152,53 +152,53 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
                             </span>
                         </div>
 
-                        <div className="summary-row py-2.5 border-b border-white/10">
-                            <span className="label text-text-white-muted">Total Nearby:</span>
-                            <span className="value font-extrabold text-[1.1rem] text-blue-300">{statusCounts.total}</span>
+                        <div className="summary-row py-2.5 border-b border-slate-100">
+                            <span className="label text-slate-500">Total Nearby:</span>
+                            <span className="value font-extrabold text-[1.1rem] text-blue-600">{statusCounts.total}</span>
                         </div>
-                        <div className="summary-row py-2.5 border-b border-white/10">
-                            <span className="label text-text-white-muted">Immediate:</span>
-                            <span className="value font-extrabold text-[1.1rem] text-red-300">{statusCounts.pending}</span>
+                        <div className="summary-row py-2.5 border-b border-slate-100">
+                            <span className="label text-slate-500">Immediate:</span>
+                            <span className="value font-extrabold text-[1.1rem] text-red-600">{statusCounts.pending}</span>
                         </div>
-                        <div className="summary-row py-2.5 border-b border-white/10">
-                            <span className="label text-text-white-muted">Pending:</span>
-                            <span className="value font-extrabold text-[1.1rem] text-orange-300">{statusCounts.in_progress}</span>
+                        <div className="summary-row py-2.5 border-b border-slate-100">
+                            <span className="label text-slate-500">Pending:</span>
+                            <span className="value font-extrabold text-[1.1rem] text-orange-500">{statusCounts.in_progress}</span>
                         </div>
                         <div className="summary-row py-2.5">
-                            <span className="label text-text-white-muted">Resolved:</span>
-                            <span className="value font-extrabold text-[1.1rem] text-green-300">{statusCounts.resolved}</span>
+                            <span className="label text-slate-500">Resolved:</span>
+                            <span className="value font-extrabold text-[1.1rem] text-green-600">{statusCounts.resolved}</span>
                         </div>
                     </div>
 
                     {/* Selected Complaint Detail */}
-                    <div className="detail-panel bg-white/5 backdrop-blur-[10px] border border-white/15 rounded-custom p-6 shadow-[0_12px_30px_rgba(0,0,0,0.15)] flex-1">
+                    <div className="detail-panel bg-slate-100 border border-slate-200 rounded-custom p-6 shadow-sm flex-1">
                         {selectedIssue ? (
                             <div className="text-left">
-                                <h3 className="text-[1.25rem] font-bold mb-3 text-text-white">{selectedIssue.title}</h3>
+                                <h3 className="text-[1.25rem] font-bold mb-3 text-slate-900">{selectedIssue.title}</h3>
                                 
                                 {selectedIssue.distance !== null && (
-                                    <div className="inline-block bg-white/10 py-1 px-2.5 rounded-full text-[0.8rem] font-semibold text-text-white mb-4">
+                                    <div className="inline-block bg-slate-100 py-1 px-2.5 rounded-full text-[0.8rem] font-semibold text-slate-700 mb-4">
                                         📍 {selectedIssue.distance.toFixed(1)} km away
                                     </div>
                                 )}
                                 
-                                <p className="text-[0.95rem] text-white/90 leading-relaxed mb-6">
+                                <p className="text-[0.95rem] text-slate-600 leading-relaxed mb-6">
                                     {selectedIssue.description}
                                 </p>
                                 
-                                <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-4">
+                                <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
                                     <span className={`badge ${selectedIssue.status}`}>{selectedIssue.status.replace('_', ' ')}</span>
-                                    <span className="badge-category bg-white/10 py-1 px-2.5 rounded-full text-text-white-soft text-[0.8rem]">{selectedIssue.category}</span>
+                                    <span className="badge-category bg-slate-100 py-1 px-2.5 rounded-full text-slate-600 text-[0.8rem]">{selectedIssue.category}</span>
                                 </div>
                                 
-                                <p className="text-[0.85rem] text-text-white-muted">
-                                    Reported by: <strong className="text-text-white">{selectedIssue.reporter_name || 'Unknown'}</strong><br/>
-                                    Time: <strong className="text-text-white">{new Date(selectedIssue.created_at).toLocaleString()}</strong>
+                                <p className="text-[0.85rem] text-slate-500">
+                                    Reported by: <strong className="text-slate-900">{selectedIssue.reporter_name || 'Unknown'}</strong><br/>
+                                    Time: <strong className="text-slate-900">{new Date(selectedIssue.created_at).toLocaleString()}</strong>
                                 </p>
 
                                 {isAdmin && onStatusChange && (
                                     <select
-                                        className="select-field mt-6 w-full bg-[rgba(20,15,45,0.5)] text-white p-3 rounded-xl border border-white/20"
+                                        className="select-field mt-6 w-full bg-white text-slate-900 p-3 rounded-xl border border-slate-300"
                                         value={selectedIssue.status}
                                         onChange={(e) => {
                                             onStatusChange(selectedIssue.id, e.target.value);
@@ -214,10 +214,10 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
                                 )}
                             </div>
                         ) : (
-                            <div className="empty-state py-12 text-center opacity-70">
-                                <MapPin size={48} className="text-white/50 mx-auto mb-4" />
-                                <h3 className="text-[1.1rem] font-semibold text-text-white mb-2">Select a Complaint</h3>
-                                <p className="text-[0.9rem] text-text-white-muted">Click on a pin in the map to view detailed information</p>
+                            <div className="empty-state py-12 text-center">
+                                <MapPin size={48} className="text-slate-300 mx-auto mb-4" />
+                                <h3 className="text-[1.1rem] font-bold text-slate-700 mb-2">Select a Complaint</h3>
+                                <p className="text-[0.9rem] text-slate-500">Click on a pin in the map to view detailed information</p>
                             </div>
                         )}
                     </div>
@@ -225,13 +225,13 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
             </div>
 
             {/* Filters */}
-            <div className="filter-bar flex gap-4 mt-6 bg-white/5 backdrop-blur-[10px] py-4 px-6 rounded-[20px] border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.15)]">
+            <div className="filter-bar flex gap-4 mt-6 bg-slate-100 py-4 px-6 rounded-[20px] border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-3">
-                    <div className="filter-label text-text-white font-semibold">
+                    <div className="filter-label text-slate-700 font-bold">
                         <MapPin size={18} />
                         <span>Nearby Filter:</span>
                     </div>
-                    <select className="select-field w-[120px] py-2 px-3 bg-[rgba(20,15,45,0.6)] text-white rounded-xl border border-white/20" value={filterRadius} onChange={(e) => setFilterRadius(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
+                    <select className="select-field w-[120px] py-2 px-3 bg-white text-slate-900 rounded-xl border border-slate-300" value={filterRadius} onChange={(e) => setFilterRadius(e.target.value === 'all' ? 'all' : Number(e.target.value))}>
                         <option value="1">1 km</option>
                         <option value="3">3 km</option>
                         <option value="5">5 km</option>
@@ -240,14 +240,14 @@ const MapView = ({ issues, isAdmin = false, onStatusChange, userLocation }) => {
                     </select>
                 </div>
 
-                <div className="w-px bg-white/20 mx-2"></div>
+                <div className="w-px bg-slate-200 mx-2"></div>
 
                 <div className="flex items-center gap-3">
-                    <div className="filter-label text-text-white font-semibold">
+                    <div className="filter-label text-slate-700 font-bold">
                         <Filter size={18} />
                         <span>Status:</span>
                     </div>
-                    <select className="select-field w-[150px] py-2 px-3 bg-[rgba(20,15,45,0.6)] text-white rounded-xl border border-white/20" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                    <select className="select-field w-[150px] py-2 px-3 bg-white text-slate-900 rounded-xl border border-slate-300" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="verified">Verified</option>

@@ -53,13 +53,13 @@ const CitizenMapView = () => {
             <div className="container-wide">
                 <div className="page-header flex justify-between items-start mb-6">
                     <div>
-                        <h1 className="text-[2rem] font-extrabold text-text-white">Map View</h1>
-                        <p className="subtitle text-text-white-muted">Geographic distribution of complaints in your area</p>
+                        <h1 className="text-[2rem] font-extrabold text-slate-900">Map View</h1>
+                        <p className="subtitle text-slate-500">Geographic distribution of complaints in your area</p>
                     </div>
                     {userLocation && (
-                        <div className="inline-flex items-center gap-2 bg-white/[0.08] py-2.5 px-5 rounded-full backdrop-blur-[10px] border border-white/20 shadow-[0_8px_25px_rgba(0,0,0,0.15)]">
+                        <div className="inline-flex items-center gap-2 bg-white/[0.08] py-2.5 px-5 rounded-full  border border-slate-200 shadow-[0_8px_25px_rgba(0,0,0,0.15)]">
                             <MapPin size={18} color="#86efac" />
-                            <span className="font-semibold text-text-white text-[0.95rem]">{userLocation.name}</span>
+                            <span className="font-semibold text-slate-900 text-[0.95rem]">{userLocation.name}</span>
                         </div>
                     )}
                 </div>

@@ -241,21 +241,21 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                         {/* Title */}
                         <div className="form-group !mb-0">
-                            <label className="text-text-white font-semibold mb-2">Issue Title</label>
-                            <input className="input-field bg-[rgba(20,10,35,0.4)]" placeholder="e.g. Large Pothole on Main Street" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+                            <label className="text-slate-700 font-bold mb-2">Issue Title</label>
+                            <input className="input-field" placeholder="e.g. Large Pothole on Main Street" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
                         </div>
 
                         {/* Description */}
                         <div className="form-group !mb-0">
-                            <label className="text-text-white font-semibold mb-2">Description</label>
-                            <textarea className="textarea-field bg-[rgba(20,10,35,0.4)] resize-none" rows="3" placeholder="Describe the issue in detail..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+                            <label className="text-slate-700 font-bold mb-2">Description</label>
+                            <textarea className="textarea-field resize-none" rows="3" placeholder="Describe the issue in detail..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
                         </div>
 
                         {/* Category & Photo */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="form-group !mb-0">
-                                <label className="text-text-white font-semibold mb-2">Category</label>
-                                <select className="select-field bg-[rgba(20,10,35,0.4)]" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                                <label className="text-slate-700 font-bold mb-2">Category</label>
+                                <select className="select-field" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                                     <option value="roads">Roads</option>
                                     <option value="sanitation">Sanitation</option>
                                     <option value="water">Water</option>
@@ -264,11 +264,11 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                 </select>
                             </div>
                             <div className="form-group !mb-0">
-                                <label className="text-text-white font-semibold mb-2">Photo (optional)</label>
+                                <label className="text-slate-700 font-bold mb-2">Photo (optional)</label>
                                 <div className="relative w-full">
                                     <input type="file" id="photo-upload" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" onChange={e => setPhoto(e.target.files[0])} />
-                                    <div className="flex items-center gap-2 w-full py-2.5 px-3.5 border border-white/15 rounded-custom-sm text-[0.9rem] text-text-white-soft bg-[rgba(20,10,35,0.4)] transition-all duration-200 hover:bg-[rgba(30,20,50,0.6)] hover:border-accent-to/50">
-                                        <Camera size={18} className="text-accent-to shrink-0" />
+                                    <div className="flex items-center gap-2 w-full py-2.5 px-3.5 border border-slate-300 rounded-custom-sm text-[0.9rem] text-slate-600 bg-white transition-all duration-200 hover:bg-slate-50 hover:border-accent-from">
+                                        <Camera size={18} className="text-accent-from shrink-0" />
                                         <span className="truncate">{photo ? photo.name : 'Upload an image...'}</span>
                                     </div>
                                 </div>
@@ -278,16 +278,16 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                         {/* ── Location Section ── */}
                         <div className="form-group !mb-0">
                             <div className="flex items-center gap-2 mb-3">
-                                <MapPin size={18} className="text-accent-to" />
-                                <label className="text-text-white font-bold text-[0.95rem] !mb-0">Location / Address of the Issue</label>
+                                <MapPin size={18} className="text-accent-from" />
+                                <label className="text-slate-900 font-bold text-[0.95rem] !mb-0">Location / Address of the Issue</label>
                             </div>
-                            <p className="text-text-white-muted text-[0.8rem] mb-3 leading-relaxed">
+                            <p className="text-slate-500 text-[0.8rem] mb-3 leading-relaxed">
                                 You can type the issue address even if you are not there, use your current device location, or pick the spot directly on the map.
                             </p>
 
                             {/* Address Input */}
                             <input
-                                className="input-field bg-[rgba(20,10,35,0.4)] mb-3"
+                                className="input-field mb-3"
                                 placeholder="e.g. Near Main Road, 5th Cross, BTM Layout"
                                 value={address}
                                 onChange={e => { setAddress(e.target.value); setSubmitError(''); }}
@@ -299,7 +299,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                     type="button"
                                     onClick={handleGetLocation}
                                     disabled={locationStatus === 'detecting'}
-                                    className="flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border border-white/15 bg-blue-500/15 text-blue-300 cursor-pointer transition-all duration-200 hover:bg-blue-500/25 hover:border-blue-400/40 disabled:opacity-50 disabled:cursor-wait"
+                                    className="flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border border-slate-200 bg-blue-50 text-blue-700 cursor-pointer transition-all duration-200 hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-wait"
                                 >
                                     <Navigation size={14} />
                                     {locationStatus === 'detecting' ? 'Detecting...' : 'Use My Location'}
@@ -308,7 +308,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                     type="button"
                                     onClick={handleToggleMap}
                                     disabled={locationStatus === 'detecting'}
-                                    className={`flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${showMap ? 'bg-accent-to/20 text-accent-to border-accent-to/40' : 'bg-white/5 text-text-white-soft border-white/15 hover:bg-white/10 hover:border-white/25'}`}
+                                    className={`flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${showMap ? 'bg-accent-from/10 text-accent-from border-accent-from/30' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}
                                 >
                                     <Map size={14} />
                                     {showMap ? 'Hide Map' : 'Show Map'}
@@ -334,7 +334,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                             {/* Map (Collapsible, large when visible) */}
                             <div
-                                className={`rounded-[16px] overflow-hidden border border-white/20 shadow-[inset_0_2px_15px_rgba(0,0,0,0.25),0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 ease-in-out ${showMap ? 'h-[280px] sm:h-[340px] opacity-100 mb-1' : 'h-0 opacity-0 border-transparent shadow-none'}`}
+                                className={`rounded-[16px] overflow-hidden border border-slate-200 shadow-inner transition-all duration-300 ease-in-out ${showMap ? 'h-[280px] sm:h-[340px] opacity-100 mb-1' : 'h-0 opacity-0 border-transparent shadow-none'}`}
                             >
                                 {mapReady && (
                                     <MapContainer center={mapCenter} zoom={16} className="h-full w-full z-[1]">
@@ -347,8 +347,8 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                             {/* Coordinates indicator when position is set */}
                             {position && (
-                                <div className="flex items-center gap-2 mt-2 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-[0.75rem] text-text-white-muted font-mono">
-                                    <MapPin size={12} className="text-accent-to shrink-0" />
+                                <div className="flex items-center gap-2 mt-2 py-1.5 px-3 rounded-lg bg-slate-50 border border-slate-200 text-[0.75rem] text-slate-500 font-mono">
+                                    <MapPin size={12} className="text-accent-from shrink-0" />
                                     {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
                                 </div>
                             )}

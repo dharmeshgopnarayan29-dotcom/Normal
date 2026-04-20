@@ -57,12 +57,12 @@ const Analytics = () => {
 
     // Top Stats with Trend Data
     const topStats = [
-        { icon: <AlertTriangle size={28} />, value: total, label: 'Total Problems', color: '#f97316', trend: '+12%', trendType: 'negative' },
-        { icon: <CheckCircle2 size={28} />, value: solved, label: 'Solved', color: '#22c55e', trend: '+5%', trendType: 'positive' },
-        { icon: <TrendingUp size={28} />, value: `${successRate}%`, label: 'Success Rate', color: '#8b5cf6', trend: '+2%', trendType: 'positive' },
-        { icon: <AlertCircle size={28} />, value: pendingCount, label: 'Pending Reviews', color: '#facc15', trend: '-3%', trendType: 'positive' }, 
-        { icon: <Activity size={28} />, value: topCategoryName, label: 'Top Category', color: '#ec4899', trend: null, trendType: 'neutral' },
-        { icon: <Clock size={28} />, value: avgResTime, label: 'Avg Resolution Time', color: '#3b82f6', trend: '-1 day', trendType: 'positive' },
+        { icon: <AlertTriangle size={28} />, value: total, label: 'Total Problems', color: '#f97316', trend: '+12%', trendType: 'negative', bgColor: 'bg-orange-100 border-orange-200' },
+        { icon: <CheckCircle2 size={28} />, value: solved, label: 'Solved', color: '#22c55e', trend: '+5%', trendType: 'positive', bgColor: 'bg-emerald-100 border-emerald-200' },
+        { icon: <TrendingUp size={28} />, value: `${successRate}%`, label: 'Success Rate', color: '#8b5cf6', trend: '+2%', trendType: 'positive', bgColor: 'bg-purple-100 border-purple-200' },
+        { icon: <AlertCircle size={28} />, value: pendingCount, label: 'Pending Reviews', color: '#facc15', trend: '-3%', trendType: 'positive', bgColor: 'bg-amber-100 border-amber-200' }, 
+        { icon: <Activity size={28} />, value: topCategoryName, label: 'Top Category', color: '#ec4899', trend: null, trendType: 'neutral', bgColor: 'bg-rose-100 border-rose-200' },
+        { icon: <Clock size={28} />, value: avgResTime, label: 'Avg Resolution Time', color: '#3b82f6', trend: '-1 day', trendType: 'positive', bgColor: 'bg-blue-100 border-blue-200' },
     ];
 
     const statusColors = {
@@ -76,12 +76,12 @@ const Analytics = () => {
     if (total > 0) {
         if (pendingCount > solved) {
             insights.push({ 
-                text: <>There are currently more pending issues (<strong className="text-text-white">{pendingCount}</strong>) than resolved ones (<strong className="text-text-white">{solved}</strong>).</>,
+                text: <>There are currently more pending issues (<strong className="text-slate-900">{pendingCount}</strong>) than resolved ones (<strong className="text-slate-900">{solved}</strong>).</>,
                 type: 'negative'
             });
         } else {
             insights.push({ 
-                text: <>Great job! More issues are resolved (<strong className="text-text-white">{solved}</strong>) than pending (<strong className="text-text-white">{pendingCount}</strong>).</>,
+                text: <>Great job! More issues are resolved (<strong className="text-slate-900">{solved}</strong>) than pending (<strong className="text-slate-900">{pendingCount}</strong>).</>,
                 type: 'positive'
             });
         }
@@ -90,19 +90,19 @@ const Analytics = () => {
             const top = categoryArray[0];
             const pct = Math.round((top.value / total) * 100);
             insights.push({ 
-                text: <><strong className="text-text-white">{top.name}</strong> complaints make up the highest proportion (<strong className="text-text-white">{pct}%</strong>) of all reports.</>,
+                text: <><strong className="text-slate-900">{top.name}</strong> complaints make up the highest proportion (<strong className="text-slate-900">{pct}%</strong>) of all reports.</>,
                 type: 'neutral'
             });
         }
         
         if (successRate >= 50) {
             insights.push({ 
-                text: <>The resolution success rate is solid at <strong className="text-text-white">{successRate}%</strong>.</>,
+                text: <>The resolution success rate is solid at <strong className="text-slate-900">{successRate}%</strong>.</>,
                 type: 'positive'
             });
         } else {
             insights.push({ 
-                text: <>The success rate is at <strong className="text-text-white">{successRate}%</strong>. Need to prioritize resolving active issues.</>,
+                text: <>The success rate is at <strong className="text-slate-900">{successRate}%</strong>. Need to prioritize resolving active issues.</>,
                 type: 'negative'
             });
         }
@@ -116,13 +116,13 @@ const Analytics = () => {
 
     // Custom Tooltip style for glassmorphism
     const customTooltipStyle = {
-        backgroundColor: 'rgba(20,15,35,0.95)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.15)',
+        backgroundColor: '#ffffff',
+        border: '1px solid #e2e8f0',
         borderRadius: '12px',
-        color: '#fff',
-        boxShadow: '0 15px 40px rgba(0,0,0,0.4)',
-        padding: '12px'
+        color: '#0f172a',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
+        padding: '12px',
+        fontWeight: '600'
     };
 
     return (
@@ -139,7 +139,7 @@ const Analytics = () => {
                     <div className="section-label">Overview</div>
                     <div className="analytics-stats-grid">
                         {topStats.map((stat, index) => (
-                            <div key={index} className="stat-card" style={{ animationDelay: `${index * 0.05}s` }}>
+                            <div key={index} className={`stat-card ${stat.bgColor || ''}`} style={{ animationDelay: `${index * 0.05}s` }}>
                                 {/* Trend Indicator */}
                                 {stat.trend && (
                                     <div className={`stat-trend ${stat.trendType}`}>
@@ -171,8 +171,8 @@ const Analytics = () => {
                         </h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-3">
                             {insights.length > 0 ? insights.map((insight, idx) => (
-                                <li key={idx} className="flex items-start gap-3 text-text-white-soft leading-[1.6] text-[0.95rem]">
-                                    <div className="mt-0.5 flex items-center justify-center bg-white/5 p-1.5 rounded-full" style={{ color: getInsightColor(insight.type) }}>
+                                <li key={idx} className="flex items-start gap-3 text-slate-600 leading-[1.6] text-[0.95rem]">
+                                    <div className="mt-0.5 flex items-center justify-center bg-slate-50 p-1.5 rounded-full" style={{ color: getInsightColor(insight.type) }}>
                                         <Lightbulb size={16} />
                                     </div>
                                     <div className="self-center">
@@ -180,7 +180,7 @@ const Analytics = () => {
                                     </div>
                                 </li>
                             )) : (
-                                <li className="text-text-white-muted flex items-center gap-2">
+                                <li className="text-slate-500 flex items-center gap-2">
                                     <Info size={16} /> Not enough data to generate insights yet.
                                 </li>
                             )}
@@ -196,7 +196,7 @@ const Analytics = () => {
                         <div className="h-[320px] mt-6">
                             {timeSeriesArray.length === 0 ? (
                                 <div className="empty-state h-full flex flex-col justify-center">
-                                    <Info size={32} color="var(--text-white-muted)" className="mx-auto mb-3" />
+                                    <Info size={32} color="#64748b" className="mx-auto mb-3" />
                                     <p>No complaints reported yet to generate this trend line.</p>
                                 </div>
                             ) : (
@@ -213,11 +213,11 @@ const Analytics = () => {
                                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                             </filter>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                                        <XAxis dataKey="date" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 12}} tickMargin={12} axisLine={false} tickLine={false} />
-                                        <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 12}} allowDecimals={false} axisLine={false} tickLine={false} />
-                                        <RechartsTooltip contentStyle={customTooltipStyle} itemStyle={{ color: '#fff' }} cursor={{stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1}} />
-                                        <Area type="monotone" dataKey="complaints" stroke="var(--accent-to)" strokeWidth={4} fillOpacity={1} fill="url(#colorComplaints)" dot={{ r: 4, strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', fill: 'var(--accent-to)' }} activeDot={{ r: 7, strokeWidth: 2, stroke: '#fff', fill: 'var(--accent-to)' }} style={{ filter: 'url(#glow)' }} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                        <XAxis dataKey="date" stroke="#cbd5e1" tick={{fill: '#64748b', fontSize: 12, fontWeight: 600}} tickMargin={12} axisLine={false} tickLine={false} />
+                                        <YAxis stroke="#cbd5e1" tick={{fill: '#64748b', fontSize: 12, fontWeight: 600}} allowDecimals={false} axisLine={false} tickLine={false} />
+                                        <RechartsTooltip contentStyle={customTooltipStyle} itemStyle={{ color: '#0f172a' }} cursor={{stroke: '#e2e8f0', strokeWidth: 1}} />
+                                        <Area type="monotone" dataKey="complaints" stroke="var(--accent-to)" strokeWidth={4} fillOpacity={1} fill="url(#colorComplaints)" dot={{ r: 4, strokeWidth: 2, stroke: '#ffffff', fill: 'var(--accent-to)' }} activeDot={{ r: 7, strokeWidth: 2, stroke: '#ffffff', fill: 'var(--accent-to)' }} style={{ filter: 'url(#glow)' }} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             )}
@@ -249,10 +249,10 @@ const Analytics = () => {
                                                     </linearGradient>
                                                 ))}
                                             </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                                            <XAxis dataKey="name" stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 11}} tickMargin={12} axisLine={false} tickLine={false} />
-                                            <YAxis stroke="rgba(255,255,255,0.4)" tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 12}} allowDecimals={false} axisLine={false} tickLine={false} />
-                                            <RechartsTooltip contentStyle={customTooltipStyle} cursor={{fill: 'rgba(255,255,255,0.03)'}} />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                            <XAxis dataKey="name" stroke="#cbd5e1" tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} tickMargin={12} axisLine={false} tickLine={false} />
+                                            <YAxis stroke="#cbd5e1" tick={{fill: '#64748b', fontSize: 12, fontWeight: 600}} allowDecimals={false} axisLine={false} tickLine={false} />
+                                            <RechartsTooltip contentStyle={customTooltipStyle} cursor={{fill: '#f1f5f9'}} />
                                             <Bar dataKey="count" radius={[8, 8, 0, 0]} maxBarSize={50}>
                                                 {statusArray.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={`url(#grad-${entry.name.replace(' ', '')})`} />
@@ -283,15 +283,15 @@ const Analytics = () => {
                                                 outerRadius={105}
                                                 paddingAngle={6}
                                                 dataKey="value"
-                                                stroke="rgba(255,255,255,0.05)"
+                                                stroke="#ffffff"
                                                 strokeWidth={2}
                                             >
                                                 {categoryArray.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
                                             </Pie>
-                                            <RechartsTooltip contentStyle={customTooltipStyle} itemStyle={{ color: '#fff' }} />
-                                            <Legend wrapperStyle={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', paddingTop: '15px' }} />
+                                            <RechartsTooltip contentStyle={customTooltipStyle} itemStyle={{ color: '#0f172a' }} />
+                                            <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', paddingTop: '15px' }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 )}

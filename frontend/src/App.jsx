@@ -2,8 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
 
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+import AuthPage from './pages/Login_Signup';
 
 // Citizen pages
 import CitizenDashboard from './pages/CitizenDashboard';
@@ -23,7 +22,7 @@ import Reports from './pages/Reports';
 const ProtectedRoute = ({ children, allowedRole }) => {
     const { user, loading } = useContext(AuthContext);
 
-    if (loading) return <div className="flex justify-center items-center h-screen font-semibold text-text-white">Loading CivicFix...</div>;
+    if (loading) return <div className="flex justify-center items-center h-screen font-semibold text-slate-900">Loading CivicFix...</div>;
     
     if (!user) return <Navigate to="/login" />;
     
@@ -40,8 +39,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/signup" element={<AuthPage />} />
 
           {/* Citizen Routes */}
           <Route path="/dashboard" element={<ProtectedRoute allowedRole="citizen"><CitizenDashboard /></ProtectedRoute>} />

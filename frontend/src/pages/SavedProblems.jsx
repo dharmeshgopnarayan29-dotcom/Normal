@@ -3,6 +3,17 @@ import Navbar from '../components/Navbar';
 import api from '../api';
 import { Bookmark, MapPin, Camera } from 'lucide-react';
 
+const getCategoryBgColor = (cat) => {
+    switch (cat?.toLowerCase()) {
+        case 'roads': return 'bg-blue-100 border-blue-200';
+        case 'sanitation': return 'bg-emerald-100 border-emerald-200';
+        case 'electricity': return 'bg-amber-100 border-amber-200';
+        case 'water': return 'bg-cyan-100 border-cyan-200';
+        case 'public_safety': return 'bg-rose-100 border-rose-200';
+        default: return 'bg-slate-100 border-slate-200';
+    }
+};
+
 const SavedProblems = () => {
     const [issues, setIssues] = useState([]);
     const [saved, setSaved] = useState([]);
@@ -54,9 +65,9 @@ const SavedProblems = () => {
                 ) : (
                     <div className="flex flex-col gap-4">
                         {savedIssues.map((issue, idx) => (
-                            <div key={issue.id} className="complaint-card" style={{ animationDelay: `${idx * 0.05}s` }}>
+                            <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
                                 <div className="complaint-card-header">
-                                    <div className="avatar bg-white/5 text-text-white border border-white/15">
+                                    <div className="avatar">
                                         {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
                                     </div>
                                     <div className="complaint-card-info">
@@ -92,16 +103,16 @@ const SavedProblems = () => {
                 {/* Show all issues to bookmark */}
                 {savedIssues.length < issues.length && (
                     <div className="mt-8">
-                        <h3 className="text-[1.1rem] font-semibold mb-4 text-text-white-soft">All Issues — Click bookmark to save</h3>
+                        <h3 className="text-[1.1rem] font-semibold mb-4 text-slate-600">All Issues — Click bookmark to save</h3>
                         <div className="flex flex-col gap-3">
                             {issues.filter(i => !saved.includes(i.id)).map(issue => (
                                 <div key={issue.id} className="glass-card p-4 flex justify-between items-center">
                                     <div>
                                         <div className="font-medium">{issue.title}</div>
-                                        <div className="text-[0.8rem] text-text-white-muted mt-0.5">{issue.category} • {issue.status.replace('_', ' ')}</div>
+                                        <div className="text-[0.8rem] text-slate-500 mt-0.5">{issue.category} • {issue.status.replace('_', ' ')}</div>
                                     </div>
                                     <button onClick={() => toggleSave(issue.id)} className="bg-transparent border-none cursor-pointer p-1.5">
-                                        <Bookmark size={18} color="var(--text-white-muted)" />
+                                        <Bookmark size={18} color="#64748b" />
                                     </button>
                                 </div>
                             ))}

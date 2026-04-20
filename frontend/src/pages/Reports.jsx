@@ -105,7 +105,7 @@ const Reports = () => {
                                         <td className="text-orange-500 font-semibold">{catPending}</td>
                                         <td>
                                             <div className="flex items-center gap-2">
-                                                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                                <div className="flex-1 h-1.5 bg-slate-50 rounded-full overflow-hidden">
                                                     <div className="h-full bg-green-500 rounded-full" style={{ width: `${rate}%` }} />
                                                 </div>
                                                 <span className="text-[0.8rem] font-semibold">{rate}%</span>

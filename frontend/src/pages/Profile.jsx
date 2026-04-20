@@ -32,17 +32,17 @@ const Profile = () => {
                     </span>
 
                     <div className="text-left mt-6">
-                        <div className="flex items-center gap-3 py-4 border-b border-white/15">
+                        <div className="flex items-center gap-3 py-4 border-b border-slate-200">
                             <Mail size={20} color="var(--text-light)" />
                             <div>
-                                <div className="text-[0.8rem] text-text-white-muted">Email</div>
+                                <div className="text-[0.8rem] text-slate-500">Email</div>
                                 <div className="text-[0.95rem] font-medium">{user?.email}</div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 py-4 border-b border-white/15">
+                        <div className="flex items-center gap-3 py-4 border-b border-slate-200">
                             <Shield size={20} color="var(--text-light)" />
                             <div>
-                                <div className="text-[0.8rem] text-text-white-muted">Role</div>
+                                <div className="text-[0.8rem] text-slate-500">Role</div>
                                 <div className="text-[0.95rem] font-medium capitalize">{user?.role}</div>
                             </div>
                         </div>

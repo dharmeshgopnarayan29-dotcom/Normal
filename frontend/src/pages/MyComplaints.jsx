@@ -17,6 +17,17 @@ const getTimeAgo = (dateStr) => {
     return `${diffDays}d ago`;
 };
 
+const getCategoryBgColor = (cat) => {
+    switch (cat?.toLowerCase()) {
+        case 'roads': return 'bg-blue-100 border-blue-200';
+        case 'sanitation': return 'bg-emerald-100 border-emerald-200';
+        case 'electricity': return 'bg-amber-100 border-amber-200';
+        case 'water': return 'bg-cyan-100 border-cyan-200';
+        case 'public_safety': return 'bg-rose-100 border-rose-200';
+        default: return 'bg-slate-100 border-slate-200';
+    }
+};
+
 const MyComplaints = () => {
     const { user } = useContext(AuthContext);
     const [issues, setIssues] = useState([]);
@@ -69,9 +80,9 @@ const MyComplaints = () => {
                         </div>
                     ) : (
                         filteredIssues.map((issue, idx) => (
-                            <div key={issue.id} className="complaint-card" style={{ animationDelay: `${idx * 0.05}s` }}>
+                            <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
                                 <div className="complaint-card-header">
-                                    <div className="avatar bg-white/5 text-text-white border border-white/15">
+                                    <div className="avatar">
                                         {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
                                     </div>
                                     <div className="complaint-card-info">

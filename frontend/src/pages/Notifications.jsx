@@ -25,6 +25,15 @@ const getNotificationIcon = (status) => {
     }
 };
 
+const getNotificationColor = (status) => {
+    switch (status) {
+        case 'resolved': return 'bg-green-100 border-green-200';
+        case 'rejected': return 'bg-red-100 border-red-200';
+        case 'in_progress': return 'bg-blue-100 border-blue-200';
+        default: return 'bg-orange-100 border-orange-200';
+    }
+};
+
 const Notifications = () => {
     const [issues, setIssues] = useState([]);
 
@@ -58,16 +67,16 @@ const Notifications = () => {
                         </div>
                     ) : (
                         issues.map((issue, idx) => (
-                            <div key={issue.id} className={`notification-card animate-[fadeInUp_0.3s_ease_forwards] ${issue.status !== 'resolved' ? 'unread' : ''}`} style={{ animationDelay: `${idx * 0.03}s` }}>
+                            <div key={issue.id} className={`notification-card animate-[fadeInUp_0.3s_ease_forwards] ${getNotificationColor(issue.status)} ${issue.status !== 'resolved' ? 'unread' : ''}`} style={{ animationDelay: `${idx * 0.03}s` }}>
                                 {getNotificationIcon(issue.status)}
                                 <div className="flex-1">
                                     <div className="font-semibold text-[0.9rem] mb-1">
                                         {issue.title}
                                     </div>
-                                    <div className="text-[0.85rem] text-text-white-soft">
+                                    <div className="text-[0.85rem] text-slate-600">
                                         Status changed to <span className={`badge ${issue.status} ml-1`}>{issue.status.replace('_', ' ')}</span>
                                     </div>
-                                    <div className="text-[0.75rem] text-text-white-muted mt-1.5">
+                                    <div className="text-[0.75rem] text-slate-500 mt-1.5">
                                         {getTimeAgo(issue.updated_at)}
                                     </div>
                                 </div>

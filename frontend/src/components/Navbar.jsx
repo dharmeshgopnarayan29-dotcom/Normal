@@ -66,13 +66,13 @@ const Navbar = () => {
                             <div className={`avatar ${isAdmin ? 'admin-avatar' : ''}`}>
                                 {(user?.email || 'U').charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-[0.85rem] font-medium text-text-white-muted">Profile</span>
-                            <ChevronDown size={14} className={`text-text-white-muted transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
+                            <span className="text-[0.85rem] font-medium text-slate-500">Profile</span>
+                            <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {profileOpen && (
                             <div className="profile-dropdown">
-                                <div className="py-2 px-[14px] text-[0.8rem] text-text-white-muted">
+                                <div className="py-2 px-[14px] text-[0.8rem] text-slate-500">
                                     {user?.email}
                                 </div>
                                 <div className="divider" />
