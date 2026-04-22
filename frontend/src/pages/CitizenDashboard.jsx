@@ -51,9 +51,9 @@ const CitizenDashboard = () => {
     const userPendingCount = userIssues.filter(i => i.status === 'pending').length;
 
     const stats = [
-        { icon: <FileText size={28} />, value: totalComplaints, label: 'Total Complaints', color: '#3b82f6', bgColor: 'bg-blue-100 border-blue-200' },
-        { icon: <TrendingUp size={28} />, value: resolvedCount, label: 'Resolved Issues', color: '#22c55e', bgColor: 'bg-emerald-100 border-emerald-200' },
-        { icon: <Eye size={28} />, value: pendingCount, label: 'Pending Review', color: '#f59e0b', bgColor: 'bg-amber-100 border-amber-200' },
+        { icon: <FileText size={28} />, value: totalComplaints, label: 'Total Complaints', color: '#000000', bgColor: 'bg-white border-gray-200' },
+        { icon: <TrendingUp size={28} />, value: resolvedCount, label: 'Resolved Issues', color: '#374151', bgColor: 'bg-white border-gray-200' },
+        { icon: <Eye size={28} />, value: pendingCount, label: 'Pending Review', color: '#6b7280', bgColor: 'bg-white border-gray-200' },
     ];
 
     const username = user?.email ? user.email.split('@')[0] : 'Citizen';
@@ -67,36 +67,36 @@ const CitizenDashboard = () => {
                 {/* LEFT SIDEBAR: Profile & Personal Insights */}
                 <div className="left-sidebar">
                     {/* Keep Profile as Base */}
-                    <div className="glass text-center !p-6 py-8 bg-slate-100 border-slate-200">
-                        <div className="w-[80px] h-[80px] rounded-full bg-gradient-to-br from-accent-from to-accent-to text-[#194342] flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
+                    <div className="glass text-center !p-6 py-8 bg-white border-gray-200">
+                        <div className="w-[80px] h-[80px] rounded-full bg-black text-white flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
                             {initial}
                         </div>
-                        <h3 className="text-[1.25rem] font-bold text-slate-900 m-0">Hii {username}!</h3>
+                        <h3 className="text-[1.25rem] font-bold text-black m-0">Hii {username}!</h3>
                     </div>
 
                     {/* Smart Location Card */}
-                    <div className="glass !p-5 flex flex-col gap-1.5 bg-emerald-100 border-emerald-200">
-                        <div className="flex items-center gap-2 text-slate-900 font-bold text-[0.95rem]">
-                            <MapPin size={16} color="#86efac" /> Whitefield, Bangalore
+                    <div className="glass !p-5 flex flex-col gap-1.5 bg-gray-50 border-gray-200">
+                        <div className="flex items-center gap-2 text-black font-bold text-[0.95rem]">
+                            <MapPin size={16} color="#000000" /> Whitefield, Bangalore
                         </div>
-                        <span className="text-[0.8rem] text-slate-500 pl-6">Moderate issue activity in your area</span>
+                        <span className="text-[0.8rem] text-gray-500 pl-6">Moderate issue activity in your area</span>
                     </div>
 
                     {/* Personal Summary */}
                     <div className="px-2">
-                        <h4 className="text-[0.85rem] text-slate-500 uppercase tracking-[1px] mb-3 font-semibold">Your Activity</h4>
+                        <h4 className="text-[0.85rem] text-gray-500 uppercase tracking-[1px] mb-3 font-semibold">Your Activity</h4>
                         <div className="flex flex-col gap-2.5 text-[0.9rem]">
-                            <div className="flex justify-between text-slate-600">
+                            <div className="flex justify-between text-gray-600">
                                 <span>Complaints Reported:</span>
-                                <strong className="text-slate-900">{userTotalComplaints}</strong>
+                                <strong className="text-black">{userTotalComplaints}</strong>
                             </div>
-                            <div className="flex justify-between text-slate-600">
+                            <div className="flex justify-between text-gray-600">
                                 <span>Resolved:</span>
-                                <strong className="text-[#86efac]">{userResolvedCount}</strong>
+                                <strong className="text-black">{userResolvedCount}</strong>
                             </div>
-                            <div className="flex justify-between text-slate-600">
+                            <div className="flex justify-between text-gray-600">
                                 <span>Pending:</span>
-                                <strong className="text-[#fdba74]">{userPendingCount}</strong>
+                                <strong className="text-black">{userPendingCount}</strong>
                             </div>
                         </div>
                     </div>
@@ -109,14 +109,14 @@ const CitizenDashboard = () => {
                     {/* Recent Activity */}
                     {userIssues.length > 0 && (
                         <div className="px-2 mt-auto">
-                            <h4 className="text-[0.85rem] text-slate-500 uppercase tracking-[1px] mb-3 font-semibold">Recent Actions</h4>
+                            <h4 className="text-[0.85rem] text-gray-500 uppercase tracking-[1px] mb-3 font-semibold">Recent Actions</h4>
                             <div className="flex flex-col gap-3">
                                 {userIssues.slice(0, 3).map((issue, idx) => (
                                     <div key={issue.id || idx} className="flex gap-2.5 items-start">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-black mt-1.5 shrink-0" />
                                         <div className="text-[0.85rem]">
-                                            <div className="text-slate-900 font-medium mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">{issue.title}</div>
-                                            <div className="text-slate-500 text-[0.75rem] capitalize">{issue.status.replace('_', ' ')} &middot; {issue.created_at ? new Date(issue.created_at).toLocaleDateString() : 'Recently'}</div>
+                                            <div className="text-black font-medium mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">{issue.title}</div>
+                                            <div className="text-gray-500 text-[0.75rem] capitalize">{issue.status.replace('_', ' ')} &middot; {issue.created_at ? new Date(issue.created_at).toLocaleDateString() : 'Recently'}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -133,7 +133,7 @@ const CitizenDashboard = () => {
                 {/* RIGHT SIDEBAR: Actions & Stats */}
                 <div className="right-sidebar">
                     {/* Hero Action Card */}
-                    <div className="action-card glass bg-indigo-100 border-indigo-200">
+                    <div className="action-card glass bg-gray-50 border-gray-200">
                         <h3>Report Issues in Your Community</h3>
                         <p>Take photos, add descriptions, and track the progress of your complaints.</p>
                         <div className="action-buttons">

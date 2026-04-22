@@ -52,14 +52,14 @@ const BorderGlow = ({
   children,
   className = '',
   edgeSensitivity = 30,
-  glowColor = '226 100 60', // Adjusted default to match our blue theme (approx #3b82f6)
-  backgroundColor = '#ffffff', // Light theme background
+  glowColor = '0 0 30', // Black/dark gray glow
+  backgroundColor = '#ffffff', // White background
   borderRadius = 28,
   glowRadius = 40,
   glowIntensity = 1.0,
   coneSpread = 25,
   animated = false,
-  colors = ['#8b5cf6', '#3b82f6', '#0ea5e9'], // Changed default to our accent colors
+  colors = ['#000000', '#374151', '#6b7280'], // Black and gray palette
   fillOpacity = 0.5,
 }) => {
   const cardRef = useRef(null);

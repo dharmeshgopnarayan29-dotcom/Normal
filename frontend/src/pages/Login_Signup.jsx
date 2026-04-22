@@ -56,7 +56,7 @@ export default function AuthPage() {
           <div className={`w-[320px] h-[420px] relative transition-transform duration-700 ease-in-out [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
 
             {/* Login Side */}
-            <div className="absolute w-full h-full flex flex-col justify-center items-center text-center bg-indigo-50/50 border border-slate-200 rounded-[28px] p-[30px] shadow-xl backface-hidden">
+            <div className="absolute w-full h-full flex flex-col justify-center items-center text-center bg-gray-50 border border-gray-200 rounded-[28px] p-[30px] shadow-xl backface-hidden">
               <div className="w-full">
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Login to CivicFix</h2>
                 <form onSubmit={handleLogin} className="flex flex-col w-full mt-2.5">
@@ -68,7 +68,7 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setLoginData({ ...loginData, username: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all"
+                    className="w-[92%] mx-auto my-1.5 p-2.5 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
                     required
                   />
                   <p className="text-[12px] pl-[10px] text-left text-slate-600 font-bold mb-1 mt-2">Password</p>
@@ -79,10 +79,10 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setLoginData({ ...loginData, password: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all"
+                    className="w-[92%] mx-auto my-1.5 p-2.5 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
                     required
                   />
-                  <button type="submit" className="mt-5 mx-auto w-[60%] p-3 bg-gradient-to-br from-accent-from to-accent-to text-white font-bold rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_10px_20px_rgba(99,102,241,0.3)] active:scale-95">
+                  <button type="submit" className="mt-5 mx-auto w-[60%] p-3 bg-black text-white font-bold rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-95">
                     Login
                   </button>
                 </form>
@@ -90,14 +90,14 @@ export default function AuthPage() {
 
               <p className="mt-5 text-[14px] text-slate-500 font-medium">
                 Don’t have an account?{" "}
-                <span className="text-accent-from cursor-pointer font-bold hover:underline" onClick={() => setIsFlipped(true)}>
+                <span className="text-black cursor-pointer font-bold hover:underline" onClick={() => setIsFlipped(true)}>
                   Signup
                 </span>
               </p>
             </div>
 
             {/* Signup Side */}
-            <div className="absolute w-full h-full flex flex-col justify-center items-center text-center bg-indigo-50/50 border border-slate-200 rounded-[28px] p-[30px] shadow-xl backface-hidden [transform:rotateY(180deg)]">
+            <div className="absolute w-full h-full flex flex-col justify-center items-center text-center bg-gray-50 border border-gray-200 rounded-[28px] p-[30px] shadow-xl backface-hidden [transform:rotateY(180deg)]">
               <div className="w-full">
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Signup</h2>
                 <form onSubmit={handleSignup} className="flex flex-col w-full mt-2.5">
@@ -108,7 +108,7 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setSignupData({ ...signupData, username: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all text-sm"
+                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
                     required
                   />
                   <input
@@ -118,7 +118,7 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setSignupData({ ...signupData, email: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all text-sm"
+                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
                     required
                   />
                   <input
@@ -128,7 +128,7 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setSignupData({ ...signupData, password: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all text-sm"
+                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
                     required
                   />
 
@@ -137,13 +137,13 @@ export default function AuthPage() {
                     onChange={(e) =>
                       setSignupData({ ...signupData, role: e.target.value })
                     }
-                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-accent-from focus:ring-2 focus:ring-accent-from/20 transition-all text-sm"
+                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
                   >
                     <option value="citizen" >Citizen</option>
                     <option value="admin">Admin</option>
                   </select>
 
-                  <button type="submit" className="mt-4 mx-auto w-[60%] p-3 bg-gradient-to-br from-accent-from to-accent-to text-white font-bold rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_10px_20px_rgba(99,102,241,0.3)] active:scale-95">
+                  <button type="submit" className="mt-4 mx-auto w-[60%] p-3 bg-black text-white font-bold rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-95">
                     Signup
                   </button>
                 </form>
@@ -151,7 +151,7 @@ export default function AuthPage() {
 
               <p className="mt-4 text-[14px] text-slate-500 font-medium">
                 Already have an account?{" "}
-                <span className="text-accent-from cursor-pointer font-bold hover:underline" onClick={() => setIsFlipped(false)}>
+                <span className="text-black cursor-pointer font-bold hover:underline" onClick={() => setIsFlipped(false)}>
                   Login
                 </span>
               </p>

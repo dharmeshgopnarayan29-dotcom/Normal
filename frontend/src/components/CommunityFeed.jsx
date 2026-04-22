@@ -17,21 +17,21 @@ const getTimeAgo = (dateStr) => {
 
 const getCategoryBgColor = (category) => {
     switch (category?.toLowerCase()) {
-        case 'roads': return 'bg-blue-100 border-blue-200';
-        case 'sanitation': return 'bg-orange-100 border-orange-200';
-        case 'water': return 'bg-teal-100 border-teal-200';
-        case 'electricity': return 'bg-yellow-100 border-yellow-200';
-        default: return 'bg-purple-100 border-purple-200';
+        case 'roads': return 'bg-white border-gray-200';
+        case 'sanitation': return 'bg-white border-gray-200';
+        case 'water': return 'bg-white border-gray-200';
+        case 'electricity': return 'bg-white border-gray-200';
+        default: return 'bg-white border-gray-200';
     }
 };
 
 const getCategoryPillColor = (category) => {
     switch (category?.toLowerCase()) {
-        case 'roads': return 'bg-blue-100 text-blue-700';
-        case 'sanitation': return 'bg-orange-100 text-orange-700';
-        case 'water': return 'bg-teal-100 text-teal-700';
-        case 'electricity': return 'bg-yellow-100 text-yellow-700';
-        default: return 'bg-purple-100 text-purple-700';
+        case 'roads': return 'bg-black text-white';
+        case 'sanitation': return 'bg-black text-white';
+        case 'water': return 'bg-black text-white';
+        case 'electricity': return 'bg-black text-white';
+        default: return 'bg-black text-white';
     }
 };
 

@@ -33,22 +33,22 @@ const Profile = () => {
 
                     <div className="text-left mt-6">
                         <div className="flex items-center gap-3 py-4 border-b border-slate-200">
-                            <Mail size={20} color="var(--text-light)" />
+                            <Mail size={20} color="#6b7280" />
                             <div>
-                                <div className="text-[0.8rem] text-slate-500">Email</div>
+                                <div className="text-[0.8rem] text-gray-500">Email</div>
                                 <div className="text-[0.95rem] font-medium">{user?.email}</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 py-4 border-b border-slate-200">
-                            <Shield size={20} color="var(--text-light)" />
+                            <Shield size={20} color="#6b7280" />
                             <div>
-                                <div className="text-[0.8rem] text-slate-500">Role</div>
+                                <div className="text-[0.8rem] text-gray-500">Role</div>
                                 <div className="text-[0.95rem] font-medium capitalize">{user?.role}</div>
                             </div>
                         </div>
                     </div>
 
-                    <button className="btn-primary mt-8 w-full !bg-danger" onClick={handleLogout}>
+                    <button className="btn-primary mt-8 w-full" onClick={handleLogout}>
                         <LogOut size={16} /> Sign Out
                     </button>
                 </div>

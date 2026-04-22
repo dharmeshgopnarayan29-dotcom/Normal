@@ -18,19 +18,19 @@ const getTimeAgo = (dateStr) => {
 
 const getNotificationIcon = (status) => {
     switch (status) {
-        case 'resolved': return <CheckCircle2 size={20} color="#22c55e" />;
-        case 'rejected': return <AlertTriangle size={20} color="#ef4444" />;
-        case 'in_progress': return <Info size={20} color="#3b82f6" />;
-        default: return <Bell size={20} color="#f97316" />;
+        case 'resolved': return <CheckCircle2 size={20} color="#000000" />;
+        case 'rejected': return <AlertTriangle size={20} color="#374151" />;
+        case 'in_progress': return <Info size={20} color="#374151" />;
+        default: return <Bell size={20} color="#000000" />;
     }
 };
 
 const getNotificationColor = (status) => {
     switch (status) {
-        case 'resolved': return 'bg-green-100 border-green-200';
-        case 'rejected': return 'bg-red-100 border-red-200';
-        case 'in_progress': return 'bg-blue-100 border-blue-200';
-        default: return 'bg-orange-100 border-orange-200';
+        case 'resolved': return 'bg-white border-gray-200';
+        case 'rejected': return 'bg-white border-gray-200';
+        case 'in_progress': return 'bg-white border-gray-200';
+        default: return 'bg-white border-gray-200';
     }
 };
 

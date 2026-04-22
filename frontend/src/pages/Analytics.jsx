@@ -57,19 +57,19 @@ const Analytics = () => {
 
     // Top Stats with Trend Data
     const topStats = [
-        { icon: <AlertTriangle size={28} />, value: total, label: 'Total Problems', color: '#f97316', trend: '+12%', trendType: 'negative', bgColor: 'bg-orange-100 border-orange-200' },
-        { icon: <CheckCircle2 size={28} />, value: solved, label: 'Solved', color: '#22c55e', trend: '+5%', trendType: 'positive', bgColor: 'bg-emerald-100 border-emerald-200' },
-        { icon: <TrendingUp size={28} />, value: `${successRate}%`, label: 'Success Rate', color: '#8b5cf6', trend: '+2%', trendType: 'positive', bgColor: 'bg-purple-100 border-purple-200' },
-        { icon: <AlertCircle size={28} />, value: pendingCount, label: 'Pending Reviews', color: '#facc15', trend: '-3%', trendType: 'positive', bgColor: 'bg-amber-100 border-amber-200' }, 
-        { icon: <Activity size={28} />, value: topCategoryName, label: 'Top Category', color: '#ec4899', trend: null, trendType: 'neutral', bgColor: 'bg-rose-100 border-rose-200' },
-        { icon: <Clock size={28} />, value: avgResTime, label: 'Avg Resolution Time', color: '#3b82f6', trend: '-1 day', trendType: 'positive', bgColor: 'bg-blue-100 border-blue-200' },
+        { icon: <AlertTriangle size={28} />, value: total, label: 'Total Problems', color: '#000000', trend: '+12%', trendType: 'negative', bgColor: 'bg-white border-gray-200' },
+        { icon: <CheckCircle2 size={28} />, value: solved, label: 'Solved', color: '#374151', trend: '+5%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
+        { icon: <TrendingUp size={28} />, value: `${successRate}%`, label: 'Success Rate', color: '#374151', trend: '+2%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
+        { icon: <AlertCircle size={28} />, value: pendingCount, label: 'Pending Reviews', color: '#6b7280', trend: '-3%', trendType: 'positive', bgColor: 'bg-white border-gray-200' }, 
+        { icon: <Activity size={28} />, value: topCategoryName, label: 'Top Category', color: '#000000', trend: null, trendType: 'neutral', bgColor: 'bg-white border-gray-200' },
+        { icon: <Clock size={28} />, value: avgResTime, label: 'Avg Resolution Time', color: '#374151', trend: '-1 day', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
     ];
 
     const statusColors = {
-        'Pending': '#f97316', 'Verified': '#3b82f6', 'In Progress': '#eab308', 'Resolved': '#22c55e', 'Rejected': '#ef4444'
+        'Pending': '#000000', 'Verified': '#374151', 'In Progress': '#6b7280', 'Resolved': '#374151', 'Rejected': '#9ca3af'
     };
 
-    const COLORS = ['#3b82f6', '#f97316', '#22c55e', '#eab308', '#8b5cf6', '#ec4899'];
+    const COLORS = ['#000000', '#374151', '#6b7280', '#9ca3af', '#4b5563', '#d1d5db'];
 
     // Generate Insights
     let insights = [];
@@ -109,9 +109,9 @@ const Analytics = () => {
     }
 
     const getInsightColor = (type) => {
-        if(type === 'positive') return '#4ade80';
-        if(type === 'negative') return '#f87171';
-        return '#fbbf24';
+        if(type === 'positive') return '#374151';
+        if(type === 'negative') return '#000000';
+        return '#6b7280';
     };
 
     // Custom Tooltip style for glassmorphism

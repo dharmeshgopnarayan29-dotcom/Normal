@@ -267,8 +267,8 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                 <label className="text-slate-700 font-bold mb-2">Photo (optional)</label>
                                 <div className="relative w-full">
                                     <input type="file" id="photo-upload" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept="image/*" onChange={e => setPhoto(e.target.files[0])} />
-                                    <div className="flex items-center gap-2 w-full py-2.5 px-3.5 border border-slate-300 rounded-custom-sm text-[0.9rem] text-slate-600 bg-white transition-all duration-200 hover:bg-slate-50 hover:border-accent-from">
-                                        <Camera size={18} className="text-accent-from shrink-0" />
+                                    <div className="flex items-center gap-2 w-full py-2.5 px-3.5 border border-gray-300 rounded-custom-sm text-[0.9rem] text-gray-600 bg-white transition-all duration-200 hover:bg-gray-50 hover:border-black">
+                                        <Camera size={18} className="text-black shrink-0" />
                                         <span className="truncate">{photo ? photo.name : 'Upload an image...'}</span>
                                     </div>
                                 </div>
@@ -278,10 +278,10 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                         {/* ── Location Section ── */}
                         <div className="form-group !mb-0">
                             <div className="flex items-center gap-2 mb-3">
-                                <MapPin size={18} className="text-accent-from" />
-                                <label className="text-slate-900 font-bold text-[0.95rem] !mb-0">Location / Address of the Issue</label>
+                                <MapPin size={18} className="text-black" />
+                                <label className="text-black font-bold text-[0.95rem] !mb-0">Location / Address of the Issue</label>
                             </div>
-                            <p className="text-slate-500 text-[0.8rem] mb-3 leading-relaxed">
+                            <p className="text-gray-500 text-[0.8rem] mb-3 leading-relaxed">
                                 You can type the issue address even if you are not there, use your current device location, or pick the spot directly on the map.
                             </p>
 
@@ -299,7 +299,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                     type="button"
                                     onClick={handleGetLocation}
                                     disabled={locationStatus === 'detecting'}
-                                    className="flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border border-slate-200 bg-blue-50 text-blue-700 cursor-pointer transition-all duration-200 hover:bg-blue-100 hover:border-blue-300 disabled:opacity-50 disabled:cursor-wait"
+                                    className="flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border border-gray-200 bg-gray-50 text-black cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:border-gray-300 disabled:opacity-50 disabled:cursor-wait"
                                 >
                                     <Navigation size={14} />
                                     {locationStatus === 'detecting' ? 'Detecting...' : 'Use My Location'}
@@ -308,7 +308,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                                     type="button"
                                     onClick={handleToggleMap}
                                     disabled={locationStatus === 'detecting'}
-                                    className={`flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${showMap ? 'bg-accent-from/10 text-accent-from border-accent-from/30' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}
+                                    className={`flex items-center gap-1.5 py-2 px-3.5 text-[0.8rem] font-bold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-wait ${showMap ? 'bg-black text-white border-black' : 'bg-gray-50 text-black border-gray-200 hover:bg-gray-100 hover:border-gray-300'}`}
                                 >
                                     <Map size={14} />
                                     {showMap ? 'Hide Map' : 'Show Map'}
@@ -317,17 +317,17 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                             {/* Location Status Messages */}
                             {locationStatus === 'success' && (
-                                <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-green-500/10 border border-green-500/25 text-green-300 text-[0.8rem] font-medium mb-3">
+                                <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 text-[0.8rem] font-medium mb-3">
                                     <CheckCircle2 size={14} className="shrink-0" /> Current location detected successfully
                                 </div>
                             )}
                             {locationStatus === 'error' && locationError && (
-                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-[0.8rem] font-medium mb-3">
+                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 text-[0.8rem] font-medium mb-3">
                                     <AlertCircle size={14} className="shrink-0 mt-0.5" /> {locationError}
                                 </div>
                             )}
                             {mapLocationError && showMap && (
-                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[0.8rem] font-medium mb-3">
+                                <div className="flex items-start gap-2 py-2 px-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-[0.8rem] font-medium mb-3">
                                     <AlertCircle size={14} className="shrink-0 mt-0.5" /> {mapLocationError}
                                 </div>
                             )}
@@ -347,8 +347,8 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                             {/* Coordinates indicator when position is set */}
                             {position && (
-                                <div className="flex items-center gap-2 mt-2 py-1.5 px-3 rounded-lg bg-slate-50 border border-slate-200 text-[0.75rem] text-slate-500 font-mono">
-                                    <MapPin size={12} className="text-accent-from shrink-0" />
+                                <div className="flex items-center gap-2 mt-2 py-1.5 px-3 rounded-lg bg-gray-50 border border-gray-200 text-[0.75rem] text-gray-500 font-mono">
+                                    <MapPin size={12} className="text-black shrink-0" />
                                     {position.lat.toFixed(5)}, {position.lng.toFixed(5)}
                                 </div>
                             )}
@@ -356,7 +356,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
 
                         {/* Submit Error */}
                         {submitError && (
-                            <div className="flex items-start gap-2 py-2.5 px-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-[0.85rem] font-medium">
+                            <div className="flex items-start gap-2 py-2.5 px-3.5 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 text-[0.85rem] font-medium">
                                 <AlertCircle size={16} className="shrink-0 mt-0.5" /> {submitError}
                             </div>
                         )}

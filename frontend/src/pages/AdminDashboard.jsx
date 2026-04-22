@@ -17,8 +17,8 @@ const adminLocationIcon = L.divIcon({
     className: 'custom-marker',
     html: `<div style="
         width: 14px; height: 14px; border-radius: 50%;
-        background: #8b5cf6; border: 3px solid white;
-        box-shadow: 0 0 10px rgba(139,92,246,0.6), 0 2px 6px rgba(0,0,0,0.3);
+        background: #000000; border: 3px solid white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.3);
     "></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -95,10 +95,10 @@ const AdminDashboard = () => {
     const completedCount = issues.filter(i => i.status === 'resolved').length;
 
     const stats = [
-        { icon: <AlertTriangle size={24} />, value: immediateCount, label: 'Immediate', color: '#ef4444', trend: '+2', trendType: 'negative', bgColor: 'bg-red-100 border-red-200' },
-        { icon: <Clock size={24} />, value: pendingCount, label: 'Pending', color: '#f97316', trend: '-5%', trendType: 'positive', bgColor: 'bg-orange-100 border-orange-200' },
-        { icon: <Users size={24} />, value: assignedCount, label: 'Active', color: '#3b82f6', trend: '+12%', trendType: 'positive', bgColor: 'bg-blue-100 border-blue-200' },
-        { icon: <CheckCircle2 size={24} />, value: completedCount, label: 'Completed', color: '#22c55e', trend: '+8%', trendType: 'positive', bgColor: 'bg-emerald-100 border-emerald-200' },
+        { icon: <AlertTriangle size={24} />, value: immediateCount, label: 'Immediate', color: '#000000', trend: '+2', trendType: 'negative', bgColor: 'bg-white border-gray-200' },
+        { icon: <Clock size={24} />, value: pendingCount, label: 'Pending', color: '#374151', trend: '-5%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
+        { icon: <Users size={24} />, value: assignedCount, label: 'Active', color: '#374151', trend: '+12%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
+        { icon: <CheckCircle2 size={24} />, value: completedCount, label: 'Completed', color: '#000000', trend: '+8%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
     ];
 
     const effectiveCenter = adminLocation
@@ -134,23 +134,23 @@ const AdminDashboard = () => {
                             {stats.map((stat, index) => (
                                 <div key={index} className={`glass-card !p-4 !rounded-[18px] relative overflow-hidden ${stat.bgColor}`} style={{ animationDelay: `${index * 0.05}s` }}>
                                     {stat.trend && (
-                                        <div className={`absolute top-3 right-3 flex items-center gap-0.5 text-[0.7rem] font-bold py-0.5 px-1.5 rounded-lg bg-slate-50 ${stat.trendType === 'positive' ? 'text-green-400' : stat.trendType === 'negative' ? 'text-red-400' : 'text-yellow-400'}`}>
+                                        <div className={`absolute top-3 right-3 flex items-center gap-0.5 text-[0.7rem] font-bold py-0.5 px-1.5 rounded-lg bg-gray-50 text-gray-700`}>
                                             <ArrowUpRight size={10} />{stat.trend}
                                         </div>
                                     )}
                                     <div className="w-[36px] h-[36px] rounded-[12px] flex items-center justify-center mb-2 shrink-0" style={{ color: stat.color, background: `linear-gradient(135deg, ${stat.color}33, transparent)`, border: `1px solid ${stat.color}44` }}>
                                         {stat.icon}
                                     </div>
-                                    <div className="text-[1.6rem] font-extrabold text-slate-900 leading-tight">{stat.value}</div>
-                                    <div className="text-[0.75rem] text-slate-500 font-semibold mt-0.5">{stat.label}</div>
+                                    <div className="text-[1.6rem] font-extrabold text-black leading-tight">{stat.value}</div>
+                                    <div className="text-[0.75rem] text-gray-500 font-semibold mt-0.5">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
 
                         {/* Filter Panel */}
-                        <div className="glass !p-4 !rounded-[18px] flex items-center justify-between gap-4 flex-wrap bg-slate-100 border-slate-200">
+                        <div className="glass !p-4 !rounded-[18px] flex items-center justify-between gap-4 flex-wrap bg-white border-gray-200">
                             <div className="flex items-center gap-3 flex-wrap">
-                                <div className="flex items-center gap-2 text-slate-900 font-semibold text-[0.9rem]">
+                                <div className="flex items-center gap-2 text-black font-semibold text-[0.9rem]">
                                     <Filter size={16} /> Filter Issues
                                 </div>
                                 <select
@@ -168,8 +168,8 @@ const AdminDashboard = () => {
                             </div>
                             {filter !== 'all' && (
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[0.85rem] text-slate-900">
-                                        <strong className="text-accent-to">{displayedIssues.length}</strong> results
+                                    <span className="text-[0.85rem] text-black">
+                                        <strong className="text-black">{displayedIssues.length}</strong> results
                                     </span>
                                     <button className="btn-secondary btn-sm py-1 px-2.5 text-[0.75rem]" onClick={() => setFilter('all')}>
                                         Clear
@@ -201,11 +201,11 @@ const AdminDashboard = () => {
                         )}
 
                         {/* Map Card — takes ~38% of panel height */}
-                        <div className="glass !rounded-[18px] overflow-hidden shrink-0 flex flex-col bg-slate-100 border-slate-200" style={{ flex: '0 0 38%' }}>
-                            <div className="py-2.5 px-5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                                <MapPin size={16} className="text-accent-to" />
-                                <h3 className="text-[0.9rem] font-bold text-slate-900">Live Map</h3>
-                                <span className="ml-auto text-[0.7rem] text-slate-500 font-medium">{displayedIssues.length} markers</span>
+                        <div className="glass !rounded-[18px] overflow-hidden shrink-0 flex flex-col bg-white border-gray-200" style={{ flex: '0 0 38%' }}>
+                            <div className="py-2.5 px-5 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                                <MapPin size={16} className="text-black" />
+                                <h3 className="text-[0.9rem] font-bold text-black">Live Map</h3>
+                                <span className="ml-auto text-[0.7rem] text-gray-500 font-medium">{displayedIssues.length} markers</span>
                             </div>
                             <div className="h-[calc(100%-38px)]">
                                 <MapContainer center={DEFAULT_CENTER} zoom={12} className="h-full w-full z-[1]">
@@ -230,9 +230,9 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Issue Details Panel — takes remaining ~55% */}
-                        <div className="glass !rounded-[18px] overflow-hidden flex-1 min-h-0 flex flex-col bg-slate-100 border-slate-200">
-                            <div className="py-2.5 px-5 border-b border-slate-100 bg-slate-50 shrink-0 flex items-center justify-between">
-                                <h3 className="text-[0.9rem] font-bold text-slate-900">
+                        <div className="glass !rounded-[18px] overflow-hidden flex-1 min-h-0 flex flex-col bg-white border-gray-200">
+                            <div className="py-2.5 px-5 border-b border-gray-100 bg-gray-50 shrink-0 flex items-center justify-between">
+                                <h3 className="text-[0.9rem] font-bold text-black">
                                     {selectedIssue ? 'Issue Details' : 'Select an Issue'}
                                 </h3>
                                 {selectedIssue && (
@@ -243,37 +243,37 @@ const AdminDashboard = () => {
                                 {selectedIssue ? (
                                     <div className="flex flex-col gap-4">
                                         {/* Title */}
-                                        <h3 className="text-[1.15rem] font-bold text-slate-900 leading-snug">{selectedIssue.title}</h3>
+                                        <h3 className="text-[1.15rem] font-bold text-black leading-snug">{selectedIssue.title}</h3>
 
                                         {/* Meta Grid */}
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-slate-200/50 rounded-xl p-3 border border-slate-300/30">
-                                                <div className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-wider mb-1">Reported By</div>
-                                                <div className="text-[0.85rem] font-semibold text-slate-900">{selectedIssue.reporter_name || 'Anonymous'}</div>
+                                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                                <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Reported By</div>
+                                                <div className="text-[0.85rem] font-semibold text-black">{selectedIssue.reporter_name || 'Anonymous'}</div>
                                             </div>
-                                            <div className="bg-slate-200/50 rounded-xl p-3 border border-slate-300/30">
-                                                <div className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-wider mb-1">Category</div>
-                                                <div className="text-[0.85rem] font-semibold text-slate-900 capitalize">{selectedIssue.category}</div>
+                                            <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                                <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Category</div>
+                                                <div className="text-[0.85rem] font-semibold text-black capitalize">{selectedIssue.category}</div>
                                             </div>
                                         </div>
 
                                         {/* Location */}
-                                        <div className="bg-slate-200/50 rounded-xl p-3 border border-slate-300/30">
-                                            <div className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-wider mb-1">Location</div>
-                                            <div className="text-[0.85rem] text-slate-900 leading-relaxed">
+                                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                            <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Location</div>
+                                            <div className="text-[0.85rem] text-black leading-relaxed">
                                                 {selectedIssue.address || (selectedIssue.lat && selectedIssue.lng ? `${selectedIssue.lat}, ${selectedIssue.lng}` : 'Location not available')}
                                             </div>
                                         </div>
 
                                         {/* Description */}
                                         <div>
-                                            <div className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-wider mb-2">Description</div>
-                                            <p className="text-[0.88rem] leading-[1.7] text-slate-600">{selectedIssue.description}</p>
+                                            <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-2">Description</div>
+                                            <p className="text-[0.88rem] leading-[1.7] text-gray-600">{selectedIssue.description}</p>
                                         </div>
 
                                         {/* Admin Actions */}
-                                        <div className="flex flex-col gap-2 pt-3 border-t border-slate-100 mt-auto">
-                                            <div className="text-[0.65rem] font-bold text-slate-500 tracking-wider uppercase mb-1">Admin Actions</div>
+                                        <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-auto">
+                                            <div className="text-[0.65rem] font-bold text-gray-500 tracking-wider uppercase mb-1">Admin Actions</div>
                                             {selectedIssue.status === 'pending' && (
                                                 <button className="btn-primary p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'verified')}>Approve Issue</button>
                                             )}
@@ -281,16 +281,16 @@ const AdminDashboard = () => {
                                                 <button className="btn-outline p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'in_progress')}>Mark In Progress</button>
                                             )}
                                             {selectedIssue.status === 'in_progress' && (
-                                                <button className="btn-primary p-2.5 text-[0.85rem] justify-center !bg-green-500" onClick={() => updateStatus(selectedIssue.id, 'resolved')}>Mark Resolved</button>
+                                                <button className="btn-primary p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'resolved')}>Mark Resolved</button>
                                             )}
                                             <button className="btn-secondary p-2.5 text-[0.85rem] justify-center" onClick={() => setSelectedIssueId(null)}>Close Details</button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
-                                        <MapPin size={40} className="text-slate-300 mb-4" />
-                                        <h3 className="text-[1.05rem] font-semibold text-slate-900 mb-1.5">No Issue Selected</h3>
-                                        <p className="text-[0.85rem] text-slate-500 max-w-[280px] leading-relaxed">Click on a map marker or complaint card to view details and manage the report.</p>
+                                        <MapPin size={40} className="text-gray-300 mb-4" />
+                                        <h3 className="text-[1.05rem] font-semibold text-black mb-1.5">No Issue Selected</h3>
+                                        <p className="text-[0.85rem] text-gray-500 max-w-[280px] leading-relaxed">Click on a map marker or complaint card to view details and manage the report.</p>
                                     </div>
                                 )}
                             </div>
