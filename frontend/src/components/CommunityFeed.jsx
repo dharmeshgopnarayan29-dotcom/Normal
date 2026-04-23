@@ -103,7 +103,7 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, em
 
                             {issue.photo && (
                                 <img
-                                    src={issue.photo.startsWith('http') ? issue.photo : `http://localhost:8000${issue.photo}`}
+                                    src={issue.photo.startsWith('http') ? issue.photo : `${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/').replace('/api/', '')}${issue.photo}`}
                                     alt={issue.title}
                                     className="complaint-card-photo"
                                 />

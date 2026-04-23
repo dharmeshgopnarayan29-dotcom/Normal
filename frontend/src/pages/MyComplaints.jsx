@@ -100,7 +100,7 @@ const MyComplaints = () => {
                                 <div className="complaint-card-desc">{issue.description}</div>
                                 {issue.photo && (
                                     <img 
-                                        src={issue.photo.startsWith('http') ? issue.photo : `http://localhost:8000${issue.photo}`} 
+                                        src={issue.photo.startsWith('http') ? issue.photo : `${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/').replace('/api/', '')}${issue.photo}`} 
                                         alt={issue.title} 
                                         className="complaint-card-photo" 
                                     />
