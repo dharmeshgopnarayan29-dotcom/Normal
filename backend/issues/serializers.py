@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Issue
+from .models import Issue, Comment, Upvote, Flag, TimelineEvent
 import urllib.request
 import urllib.parse
 import json
@@ -45,13 +45,75 @@ def reverse_geocode(lat, lng):
     return ''
 
 
+class TimelineEventSerializer(serializers.ModelSerializer):
+    performed_by_name = serializers.ReadOnlyField(source='performed_by.username')
+
+    class Meta:
+        model = TimelineEvent
+        fields = ('id', 'issue', 'step', 'performed_by', 'performed_by_name', 'note', 'department', 'created_at')
+        read_only_fields = ('issue', 'performed_by', 'created_at')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'issue', 'user', 'username', 'text', 'created_at')
+        read_only_fields = ('user', 'issue', 'created_at')
+
+
 class IssueSerializer(serializers.ModelSerializer):
     reporter_name = serializers.ReadOnlyField(source='reported_by.username')
+    upvote_count = serializers.SerializerMethodField()
+    comment_count = serializers.SerializerMethodField()
+    flag_count = serializers.SerializerMethodField()
+    has_upvoted = serializers.SerializerMethodField()
+    has_flagged = serializers.SerializerMethodField()
+    timeline = serializers.SerializerMethodField()
 
     class Meta:
         model = Issue
         fields = '__all__'
-        read_only_fields = ('reported_by', 'created_at', 'updated_at')
+        read_only_fields = ('reported_by', 'created_at', 'updated_at', 'is_flagged')
+
+    def get_upvote_count(self, obj):
+        return obj.upvotes.count()
+
+    def get_comment_count(self, obj):
+        return obj.comments.count()
+
+    def get_flag_count(self, obj):
+        return obj.flags.count()
+
+    def get_has_upvoted(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.upvotes.filter(user=request.user).exists()
+        return False
+
+    def get_has_flagged(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.flags.filter(user=request.user).exists()
+        return False
+
+    def get_timeline(self, obj):
+        events = obj.timeline_events.all()
+        if events.exists():
+            return TimelineEventSerializer(events, many=True).data
+
+        # Backwards compatibility: generate a "submitted" event from created_at
+        return [{
+            'id': None,
+            'issue': obj.id,
+            'step': 'submitted',
+            'performed_by': obj.reported_by_id,
+            'performed_by_name': obj.reported_by.username if obj.reported_by else 'Unknown',
+            'note': '',
+            'department': '',
+            'created_at': obj.created_at.isoformat() if obj.created_at else None,
+        }]
 
     def validate(self, data):
         address = data.get('address', '').strip() if data.get('address') else ''
