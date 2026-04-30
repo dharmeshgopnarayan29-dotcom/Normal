@@ -44,7 +44,7 @@ export default function AuthPage() {
 
         {/* LEFT SIDE: Branding */}
         <div className="w-1/2 p-[50px] flex flex-col justify-center text-slate-900">
-          <h1 className="text-[42px] mb-2.5 font-extrabold tracking-tight text-slate-900">CivicFix</h1>
+          <h1 className="text-[42px] mb-2.5 font-extrabold tracking-tight text-slate-900">CivicConnect</h1>
           <h3 className="mb-5 text-xl font-bold text-slate-700">City Explorer & Reporter</h3>
           <p className="leading-[1.6] text-slate-500 font-medium">
             Report city issues, track complaints, and help improve your community.
@@ -58,7 +58,7 @@ export default function AuthPage() {
             {/* Login Side */}
             <div className="absolute w-full h-full flex flex-col justify-center items-center text-center bg-gray-50 border border-gray-200 rounded-[28px] p-[30px] shadow-xl backface-hidden">
               <div className="w-full">
-                <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Login to CivicFix</h2>
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Login to CivicConnect</h2>
                 <form onSubmit={handleLogin} className="flex flex-col w-full mt-2.5">
                   <p className="text-[12px] pl-[10px] text-left text-slate-600 font-bold mb-1">Username</p>
                   <input

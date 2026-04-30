@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../api';
 import { AuthContext } from '../context/AuthContext';
-import { FileText, MapPin, Camera } from 'lucide-react';
+import { FileText, MapPin, Camera, ChevronDown, ChevronUp } from 'lucide-react';
+import ProgressTimeline, { MiniTimeline } from '../components/ProgressTimeline';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -32,13 +33,12 @@ const MyComplaints = () => {
     const { user } = useContext(AuthContext);
     const [issues, setIssues] = useState([]);
     const [filter, setFilter] = useState('all');
+    const [expandedId, setExpandedId] = useState(null);
 
     useEffect(() => {
         const fetchMyIssues = async () => {
             try {
                 const res = await api.get('issues/');
-                // Filter to only show current user's issues
-                const myIssues = res.data.filter(i => i.reporter_name === user?.email?.split('@')[0] || i.reporter_name);
                 setIssues(res.data);
             } catch (err) {
                 console.error('Failed to fetch', err);
@@ -48,6 +48,10 @@ const MyComplaints = () => {
     }, [user]);
 
     const filteredIssues = filter === 'all' ? issues : issues.filter(i => i.status === filter);
+
+    const toggleTimeline = (id) => {
+        setExpandedId(expandedId === id ? null : id);
+    };
 
     return (
         <div className="dashboard-bg">
@@ -92,7 +96,7 @@ const MyComplaints = () => {
                                         </div>
                                         <div className="complaint-card-location">
                                             <MapPin size={12} />
-                                            <span>{issue.lat}, {issue.lng}</span>
+                                            <span>{issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}</span>
                                         </div>
                                     </div>
                                     <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
@@ -104,6 +108,24 @@ const MyComplaints = () => {
                                         alt={issue.title} 
                                         className="complaint-card-photo" 
                                     />
+                                )}
+
+                                {/* Mini Timeline */}
+                                <MiniTimeline timeline={issue.timeline} status={issue.status} />
+
+                                {/* Expand/Collapse Full Timeline */}
+                                <button
+                                    className="flex items-center gap-1.5 mt-2 py-1.5 px-3 rounded-xl text-[0.8rem] font-bold text-gray-500 bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-black w-full [font-family:inherit]"
+                                    onClick={() => toggleTimeline(issue.id)}
+                                >
+                                    {expandedId === issue.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    {expandedId === issue.id ? 'Hide Timeline' : 'View Full Timeline'}
+                                </button>
+
+                                {expandedId === issue.id && (
+                                    <div className="mt-2 py-3 px-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <ProgressTimeline timeline={issue.timeline} status={issue.status} />
+                                    </div>
                                 )}
                             </div>
                         ))

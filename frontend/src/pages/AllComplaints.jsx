@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import api from '../api';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import BorderGlow from '../components/BorderGlow';
+import { MiniTimeline } from '../components/ProgressTimeline';
 
 const AllComplaints = () => {
     const [issues, setIssues] = useState([]);
@@ -81,13 +82,14 @@ const AllComplaints = () => {
                                 <th>Title</th>
                                 <th>Reporter</th>
                                 <th>Category</th>
+                                <th>Progress</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedIssues.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center p-8 text-slate-500">No complaints found</td></tr>
+                                <tr><td colSpan="6" className="text-center p-8 text-slate-500">No complaints found</td></tr>
                             ) : (
                                 paginatedIssues.map(iss => (
                                     <tr key={iss.id}>
@@ -97,6 +99,11 @@ const AllComplaints = () => {
                                         </td>
                                         <td>{iss.reporter_name || 'Unknown'}</td>
                                         <td className="capitalize">{iss.category}</td>
+                                        <td>
+                                            <div className="min-w-[200px]">
+                                                <MiniTimeline timeline={iss.timeline} status={iss.status} />
+                                            </div>
+                                        </td>
                                         <td><span className={`badge ${iss.status}`}>{iss.status.replace('_', ' ')}</span></td>
                                         <td>
                                             <select className="select-field w-[130px] py-1.5 px-2.5 text-[0.8rem]" value={iss.status} onChange={e => updateStatus(iss.id, e.target.value)}>

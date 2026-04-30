@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Home, Bell, FileText, Map, ChevronDown, Menu, X, LayoutDashboard, ClipboardList, Bookmark, BarChart3, FileBarChart, User } from 'lucide-react';
+import { Home, Bell, FileText, Map, ChevronDown, Menu, X, LayoutDashboard, ClipboardList, Bookmark, BarChart3, FileBarChart, User, Flag } from 'lucide-react';
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -25,6 +25,7 @@ const Navbar = () => {
         { to: '/admin/map', icon: Map, label: 'Map View' },
         { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/admin/reports', icon: FileBarChart, label: 'Reports' },
+        { to: '/admin/flagged', icon: Flag, label: 'Flagged' },
     ];
 
     const navItems = isAdmin ? adminNav : citizenNav;
@@ -41,7 +42,7 @@ const Navbar = () => {
         <>
             <nav className="navbar">
                 <Link to={isAdmin ? '/admin' : '/dashboard'} className="navbar-brand">
-                    CivicFix<span>Connect</span>
+                    Civic<span>Connect</span>
                 </Link>
 
                 {/* Desktop Nav */}

@@ -4,7 +4,7 @@ import StatsBar from '../components/StatsBar';
 import CommunityFeed from '../components/CommunityFeed';
 import ReportIssueModal from '../components/ReportIssueModal';
 import api from '../api';
-import { Camera, Plus, FileText, TrendingUp, Eye, MapPin, Download } from 'lucide-react';
+import { Camera, Plus, FileText, TrendingUp, Eye, MapPin, Download, Search, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
 const CitizenDashboard = () => {
@@ -12,15 +12,18 @@ const CitizenDashboard = () => {
     const [issues, setIssues] = useState([]);
     const [userIssues, setUserIssues] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [locationQuery, setLocationQuery] = useState('');
+    const [activeLocationFilter, setActiveLocationFilter] = useState('');
 
     useEffect(() => { 
         fetchIssues(); 
         fetchUserIssues();
     }, []);
 
-    const fetchIssues = async () => {
+    const fetchIssues = async (location = '') => {
         try {
-            const res = await api.get('issues/');
+            const params = location ? `?location=${encodeURIComponent(location)}` : '';
+            const res = await api.get(`issues/${params}`);
             setIssues(res.data);
         } catch (err) { console.error('Failed to fetch issues', err); }
     };
@@ -36,9 +39,26 @@ const CitizenDashboard = () => {
         try {
             await api.post('issues/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             setShowModal(false);
-            fetchIssues();
+            fetchIssues(activeLocationFilter);
             fetchUserIssues();
         } catch (err) { alert('Failed to report issue.'); }
+    };
+
+    const handleLocationSearch = (e) => {
+        e.preventDefault();
+        setActiveLocationFilter(locationQuery.trim());
+        fetchIssues(locationQuery.trim());
+    };
+
+    const handleClearLocation = () => {
+        setLocationQuery('');
+        setActiveLocationFilter('');
+        fetchIssues('');
+    };
+
+    const handleRefresh = () => {
+        fetchIssues(activeLocationFilter);
+        fetchUserIssues();
     };
 
     const totalComplaints = issues.length;
@@ -124,7 +144,32 @@ const CitizenDashboard = () => {
 
                 {/* CENTER: Main Feed */}
                 <div className="center-content">
-                    <CommunityFeed issues={issues} />
+                    {/* Location Search Bar */}
+                    <form onSubmit={handleLocationSearch} className="location-search-bar">
+                        <Search size={16} className="text-gray-400 shrink-0" />
+                        <input
+                            type="text"
+                            placeholder="Filter by location (e.g. Whitefield, BTM Layout...)"
+                            value={locationQuery}
+                            onChange={e => setLocationQuery(e.target.value)}
+                            className="flex-1 bg-transparent border-none outline-none text-[0.9rem] text-black placeholder:text-gray-400 font-medium"
+                        />
+                        {activeLocationFilter && (
+                            <button type="button" onClick={handleClearLocation} className="p-1 rounded-lg hover:bg-gray-200 transition-colors">
+                                <X size={14} className="text-gray-500" />
+                            </button>
+                        )}
+                        <button type="submit" className="py-1.5 px-4 bg-black text-white text-[0.8rem] font-bold rounded-xl hover:bg-gray-800 transition-all">
+                            Search
+                        </button>
+                    </form>
+                    {activeLocationFilter && (
+                        <div className="flex items-center gap-2 mb-4 text-[0.8rem] text-gray-500 font-medium">
+                            <MapPin size={12} /> Showing results for: <strong className="text-black">{activeLocationFilter}</strong>
+                            <button onClick={handleClearLocation} className="text-black underline ml-1 cursor-pointer bg-transparent border-none text-[0.8rem] font-bold">Clear</button>
+                        </div>
+                    )}
+                    <CommunityFeed issues={issues} onRefresh={handleRefresh} />
                 </div>
 
                 {/* RIGHT SIDEBAR: Actions & Stats */}

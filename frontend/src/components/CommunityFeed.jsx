@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send } from 'lucide-react';
+import api from '../api';
+import { MiniTimeline } from './ProgressTimeline';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -35,7 +37,95 @@ const getCategoryPillColor = (category) => {
     }
 };
 
-const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, emptyDesc }) => {
+// ── Comment Section Component ──
+const CommentSection = ({ issueId, commentCount }) => {
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+
+    const fetchComments = async () => {
+        try {
+            const res = await api.get(`issues/${issueId}/comments/`);
+            setComments(res.data);
+        } catch (err) { console.error('Failed to fetch comments', err); }
+    };
+
+    useEffect(() => {
+        if (expanded) fetchComments();
+    }, [expanded]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+        setLoading(true);
+        try {
+            await api.post(`issues/${issueId}/comments/`, { text: newComment.trim() });
+            setNewComment('');
+            fetchComments();
+        } catch (err) { console.error('Failed to post comment', err); }
+        setLoading(false);
+    };
+
+    return (
+        <div className="comment-section">
+            <button
+                className="comment-toggle-btn"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <MessageCircle size={14} />
+                <span>{commentCount || 0} Comment{commentCount !== 1 ? 's' : ''}</span>
+                <span className="ml-auto text-[0.7rem] text-gray-400">{expanded ? '▲' : '▼'}</span>
+            </button>
+
+            {expanded && (
+                <div className="comment-body">
+                    {/* Comment list */}
+                    <div className="comment-list">
+                        {comments.length === 0 ? (
+                            <p className="text-[0.8rem] text-gray-400 text-center py-3">No comments yet. Be the first!</p>
+                        ) : (
+                            comments.map(c => (
+                                <div key={c.id} className="comment-item">
+                                    <div className="comment-avatar">
+                                        {(c.username || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[0.8rem] font-bold text-black">{c.username}</span>
+                                            <span className="text-[0.7rem] text-gray-400">{getTimeAgo(c.created_at)}</span>
+                                        </div>
+                                        <p className="text-[0.83rem] text-gray-700 mt-0.5 leading-relaxed break-words">{c.text}</p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Add comment form */}
+                    <form onSubmit={handleSubmit} className="comment-input-row">
+                        <input
+                            type="text"
+                            placeholder="Write a comment..."
+                            value={newComment}
+                            onChange={e => setNewComment(e.target.value)}
+                            className="comment-input"
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading || !newComment.trim()}
+                            className="comment-send-btn"
+                        >
+                            <Send size={14} />
+                        </button>
+                    </form>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emptyTitle, emptyDesc }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
@@ -44,8 +134,11 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, em
         setCurrentPage(1);
     }, [issues.length]);
 
+    // Filter out rejected issues from the feed (they remain in MyComplaints/AllComplaints)
+    const feedIssues = issues.filter(i => i.status !== 'rejected');
+
     // Ensure issues are sorted newest first
-    const sortedIssues = [...issues].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const sortedIssues = [...feedIssues].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const totalPages = Math.ceil(sortedIssues.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -57,6 +150,24 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, em
 
     const handlePrev = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
+    // ── Upvote handler ──
+    const handleUpvote = async (issueId) => {
+        try {
+            await api.post(`issues/${issueId}/upvote/`);
+            if (onRefresh) onRefresh();
+        } catch (err) { console.error('Upvote failed', err); }
+    };
+
+    // ── Flag toggle handler ──
+    const handleFlag = async (issueId) => {
+        try {
+            await api.post(`issues/${issueId}/flag/`);
+            if (onRefresh) onRefresh();
+        } catch (err) {
+            console.error('Flag toggle failed', err);
+        }
     };
 
     return (
@@ -110,9 +221,40 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, em
                             )}
 
                             <div className="complaint-card-footer flex-wrap">
-                                <span className={`badge ${getCategoryPillColor(issue.category)}`}>
-                                    {issue.category}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <span className={`badge ${getCategoryPillColor(issue.category)}`}>
+                                        {issue.category}
+                                    </span>
+
+                                    {/* Upvote Button */}
+                                    <button
+                                        className={`action-icon-btn ${issue.has_upvoted ? 'active' : ''}`}
+                                        onClick={() => handleUpvote(issue.id)}
+                                        title={issue.has_upvoted ? 'Remove upvote' : 'Upvote'}
+                                    >
+                                        <ThumbsUp size={14} fill={issue.has_upvoted ? 'currentColor' : 'none'} />
+                                        <span>{issue.upvote_count || 0}</span>
+                                    </button>
+
+                                    {/* Flag Button — citizen only, toggleable */}
+                                    {!isAdmin && (
+                                        <button
+                                            className={`action-icon-btn flag-btn-toggle ${issue.has_flagged ? 'flagged' : ''}`}
+                                            onClick={() => handleFlag(issue.id)}
+                                            title={issue.has_flagged ? 'Unflag this issue' : 'Flag this issue'}
+                                        >
+                                            <Flag size={14} fill={issue.has_flagged ? 'currentColor' : 'none'} />
+                                        </button>
+                                    )}
+
+                                    {/* Flag count for admin */}
+                                    {isAdmin && issue.flag_count > 0 && (
+                                        <span className="action-icon-btn flagged" title={`${issue.flag_count} flag(s)`}>
+                                            <Flag size={14} fill="currentColor" />
+                                            <span>{issue.flag_count}</span>
+                                        </span>
+                                    )}
+                                </div>
                                 
                                 {isAdmin && onStatusChange && (
                                     <div className="quick-action-row !mt-0">
@@ -139,6 +281,12 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, emptyTitle, em
                                     </div>
                                 )}
                             </div>
+
+                            {/* Mini Timeline */}
+                            <MiniTimeline timeline={issue.timeline} status={issue.status} />
+
+                            {/* Comment Section */}
+                            <CommentSection issueId={issue.id} commentCount={issue.comment_count} />
                         </div>
                     ))
                 )}

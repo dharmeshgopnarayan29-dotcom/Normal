@@ -250,10 +250,10 @@
     @apply inline-flex items-center py-1 px-2.5 rounded-full text-[0.75rem] font-bold uppercase tracking-wide whitespace-nowrap;
   }
   .badge.pending { @apply bg-black text-white; }
-  .badge.verified { @apply bg-white text-black border border-black; }
-  .badge.in_progress { @apply bg-gray-800 text-white; }
-  .badge.resolved { @apply bg-white text-black border border-black; }
-  .badge.rejected { @apply bg-gray-200 text-black; }
+  .badge.verified { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+  .badge.in_progress { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+  .badge.resolved { @apply bg-green-50 text-green-700 border border-green-200; }
+  .badge.rejected { @apply bg-red-50 text-red-700 border border-red-200; }
   .badge-category {
     @apply text-[0.8rem] font-semibold capitalize text-gray-500;
   }
@@ -601,5 +601,216 @@
   /* === LOGIN/SIGNUP === */
   .auth-page {
     @apply flex justify-center items-center h-screen bg-white;
+  }
+
+  /* === COMMENT SECTION === */
+  .comment-section {
+    @apply mt-4 pt-3 border-t border-gray-100;
+  }
+  .comment-toggle-btn {
+    @apply flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-[0.8rem] font-bold text-gray-500 bg-transparent border-none cursor-pointer transition-all duration-200 w-full hover:bg-gray-50 hover:text-black [font-family:inherit];
+  }
+  .comment-body {
+    @apply mt-3 flex flex-col gap-3;
+  }
+  .comment-list {
+    @apply flex flex-col gap-2.5 max-h-[240px] overflow-y-auto pr-1;
+  }
+  .comment-list::-webkit-scrollbar {
+    @apply w-1;
+  }
+  .comment-list::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full;
+  }
+  .comment-item {
+    @apply flex items-start gap-2.5 py-2 px-3 rounded-xl bg-gray-50 border border-gray-100;
+  }
+  .comment-avatar {
+    @apply w-[28px] h-[28px] rounded-full bg-black text-white flex items-center justify-center text-[0.65rem] font-bold shrink-0;
+  }
+  .comment-input-row {
+    @apply flex items-center gap-2 bg-gray-50 rounded-xl border border-gray-200 py-1.5 px-3 transition-all duration-200 focus-within:border-black focus-within:ring-2 focus-within:ring-black/10;
+  }
+  .comment-input {
+    @apply flex-1 bg-transparent border-none outline-none text-[0.85rem] text-black placeholder:text-gray-400 py-1.5 [font-family:inherit];
+  }
+  .comment-send-btn {
+    @apply p-2 rounded-lg bg-black text-white border-none cursor-pointer transition-all duration-200 hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center;
+  }
+
+  /* === ACTION ICON BUTTONS (Upvote, Flag) === */
+  .action-icon-btn {
+    @apply flex items-center gap-1 py-1 px-2.5 rounded-lg text-[0.8rem] font-bold text-gray-500 bg-transparent border border-gray-200 cursor-pointer transition-all duration-200 hover:bg-gray-100 hover:text-black hover:border-gray-300 [font-family:inherit];
+  }
+  .action-icon-btn.active {
+    @apply text-black bg-gray-100 border-gray-300;
+  }
+  .action-icon-btn.flag-btn:hover {
+    @apply text-black bg-gray-100 border-gray-300;
+  }
+  .action-icon-btn.flagged {
+    @apply text-black bg-gray-100 border-gray-300 cursor-default;
+  }
+
+  /* === FLAG TOGGLE BUTTON (Animated) === */
+  .flag-btn-toggle {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .flag-btn-toggle:hover {
+    @apply text-red-500 border-red-200 bg-red-50;
+  }
+  .flag-btn-toggle.flagged {
+    @apply text-red-500 bg-red-50 border-red-200 cursor-pointer;
+  }
+  .flag-btn-toggle.flagged:hover {
+    @apply text-gray-500 bg-gray-50 border-gray-200;
+  }
+  .flag-btn-toggle svg {
+    @apply transition-transform duration-200 ease-in-out;
+  }
+  .flag-btn-toggle:active svg {
+    @apply scale-125;
+  }
+
+  /* === LOCATION SEARCH BAR === */
+  .location-search-bar {
+    @apply flex items-center gap-2.5 py-2.5 px-4 bg-white border border-gray-200 rounded-2xl mb-5 shadow-sm transition-all duration-200 focus-within:border-black focus-within:ring-2 focus-within:ring-black/10 focus-within:shadow-md;
+  }
+
+  /* ══════════════════════════════════════════════
+     PROGRESS TIMELINE
+     ══════════════════════════════════════════════ */
+
+  /* ── Full Timeline (Vertical) ── */
+  .progress-timeline.vertical {
+    @apply flex flex-col gap-0 relative py-2;
+  }
+
+  .timeline-step {
+    @apply flex items-start gap-4 relative pl-0 opacity-0;
+    animation: timelineFadeIn 0.4s ease forwards;
+  }
+  .progress-timeline.mounted .timeline-step {
+    @apply opacity-100;
+  }
+
+  .timeline-circle {
+    @apply w-[36px] h-[36px] rounded-full border-2 border-gray-200 bg-white flex items-center justify-center shrink-0 text-gray-400 transition-all duration-500 relative z-10;
+  }
+  .timeline-circle.completed {
+    @apply bg-black border-black text-white;
+  }
+  .timeline-circle.current {
+    @apply border-black text-black;
+    animation: timelinePulse 2s ease-in-out infinite;
+  }
+
+  .timeline-connector {
+    @apply absolute left-[17px] -top-1 w-[2px] h-[calc(100%)] bg-gray-200;
+    transform-origin: top;
+  }
+  .timeline-connector.completed {
+    @apply bg-black;
+    animation: lineGrow 0.6s ease forwards;
+  }
+  .timeline-connector.rejected {
+    @apply bg-red-400;
+  }
+
+  .timeline-content {
+    @apply pb-6 pt-1 min-w-0 flex-1;
+  }
+  .timeline-step:last-child .timeline-content {
+    @apply pb-0;
+  }
+
+  .timeline-step-title {
+    @apply text-[0.9rem] font-bold text-black tracking-tight;
+  }
+  .rejected-title {
+    @apply text-red-600;
+  }
+
+  .timeline-step-time {
+    @apply text-[0.75rem] text-gray-400 mt-0.5 font-medium;
+  }
+  .timeline-step-actor {
+    @apply text-[0.8rem] text-gray-500 mt-1 font-medium;
+  }
+  .timeline-step-note {
+    @apply text-[0.8rem] text-gray-600 mt-1.5 italic bg-gray-50 py-1.5 px-3 rounded-lg border border-gray-100 inline-block;
+  }
+  .rejected-note {
+    @apply bg-red-50 border-red-100 text-red-600;
+  }
+  .timeline-step-pending {
+    @apply text-[0.8rem] text-gray-300 mt-0.5 font-medium;
+  }
+  .timeline-step.upcoming .timeline-step-title {
+    @apply text-gray-300;
+  }
+
+  .timeline-circle.rejected {
+    @apply bg-red-500 border-red-500 text-white;
+  }
+
+  .timeline-resolved-badge {
+    @apply text-center mt-4 py-2.5 px-5 bg-green-50 border border-green-200 rounded-2xl text-[0.85rem] font-bold text-green-700;
+    animation: celebrationPop 0.5s ease forwards;
+  }
+
+  /* ── Mini Timeline (Compact/Horizontal, for cards) ── */
+  .mini-timeline {
+    @apply flex items-center gap-0 mt-3 pt-3 border-t border-gray-100 flex-wrap;
+  }
+  .mini-timeline-step {
+    @apply flex items-center gap-1;
+  }
+  .mini-timeline-dot {
+    @apply w-[16px] h-[16px] rounded-full border-[1.5px] border-gray-200 bg-white flex items-center justify-center text-gray-300 transition-all duration-300;
+  }
+  .mini-timeline-dot.completed {
+    @apply bg-black border-black text-white;
+  }
+  .mini-timeline-dot.current {
+    @apply border-black text-black;
+    animation: timelinePulse 2s ease-in-out infinite;
+  }
+  .mini-timeline-label {
+    @apply text-[0.65rem] font-bold text-gray-400 uppercase tracking-wide hidden sm:block;
+  }
+  .mini-timeline-step.completed .mini-timeline-label {
+    @apply text-black;
+  }
+  .mini-timeline-step.current .mini-timeline-label {
+    @apply text-black;
+  }
+  .mini-timeline-line {
+    @apply w-3 sm:w-5 h-[1.5px] bg-gray-200 mx-0.5 transition-all duration-500;
+  }
+  .mini-timeline-line.completed {
+    @apply bg-black;
+  }
+  .mini-timeline-rejected {
+    @apply flex items-center gap-1 ml-1 text-[0.65rem] font-bold text-red-500 uppercase;
+  }
+
+  /* ── Timeline Animations ── */
+  @keyframes timelineFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes timelinePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.15); }
+    50% { box-shadow: 0 0 0 6px rgba(0,0,0,0); }
+  }
+  @keyframes lineGrow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  @keyframes celebrationPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
   }
 }

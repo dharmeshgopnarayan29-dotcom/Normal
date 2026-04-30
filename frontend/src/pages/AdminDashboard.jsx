@@ -181,6 +181,7 @@ const AdminDashboard = () => {
                             issues={displayedIssues}
                             isAdmin={true}
                             onStatusChange={updateStatus}
+                            onRefresh={fetchData}
                             emptyTitle={filter !== 'all' ? "No results found" : "No issues reported yet"}
                             emptyDesc={filter !== 'all' ? `No issues match the "${filter.replace('_', ' ')}" filter.` : "No pending issues to manage."}
                         />

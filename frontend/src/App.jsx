@@ -18,11 +18,12 @@ import SavedProblems from './pages/SavedProblems';
 import AdminMapView from './pages/AdminMapView';
 import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
+import FlaggedIssues from './pages/FlaggedIssues';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
     const { user, loading } = useContext(AuthContext);
 
-    if (loading) return <div className="flex justify-center items-center h-screen font-semibold text-slate-900">Loading CivicFix...</div>;
+    if (loading) return <div className="flex justify-center items-center h-screen font-semibold text-slate-900">Loading CivicConnect...</div>;
     
     if (!user) return <Navigate to="/login" />;
     
@@ -56,6 +57,7 @@ function App() {
           <Route path="/admin/map" element={<ProtectedRoute allowedRole="admin"><AdminMapView /></ProtectedRoute>} />
           <Route path="/admin/analytics" element={<ProtectedRoute allowedRole="admin"><Analytics /></ProtectedRoute>} />
           <Route path="/admin/reports" element={<ProtectedRoute allowedRole="admin"><Reports /></ProtectedRoute>} />
+          <Route path="/admin/flagged" element={<ProtectedRoute allowedRole="admin"><FlaggedIssues /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>
