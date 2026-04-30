@@ -124,9 +124,7 @@ const AdminDashboard = () => {
 
                 <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-                    {/* ══════════════════════════════════════ */}
                     {/* LEFT COLUMN — Complaint Management     */}
-                    {/* ══════════════════════════════════════ */}
                     <div className="w-full lg:w-1/2 flex flex-col gap-5">
 
                         {/* Stats Row */}
@@ -188,9 +186,7 @@ const AdminDashboard = () => {
                         />
                     </div>
 
-                    {/* ══════════════════════════════════════ */}
                     {/* RIGHT COLUMN — Map + Issue Details      */}
-                    {/* ══════════════════════════════════════ */}
                     <div className="w-full lg:w-1/2 lg:sticky lg:top-[100px] lg:self-start flex flex-col gap-4" style={{ height: 'calc(100vh - 116px)' }}>
 
                         {/* Geo fallback message */}
