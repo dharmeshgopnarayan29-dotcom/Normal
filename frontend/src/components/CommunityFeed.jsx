@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send } from 'lucide-react';
-import api from '../api';
+import api, { getMediaUrl } from '../api';
 import { MiniTimeline } from './ProgressTimeline';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -231,7 +231,7 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
 
                             {issue.photo && (
                                 <img
-                                    src={issue.photo.startsWith('http') ? issue.photo : `${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/').replace('/api/', '')}${issue.photo}`}
+                                    src={getMediaUrl(issue.photo)}
                                     alt={issue.title}
                                     className="complaint-card-photo"
                                 />

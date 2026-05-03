@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../components/Navbar';
-import api from '../api';
+import api, { getMediaUrl } from '../api';
 import { AuthContext } from '../context/AuthContext';
 import { FileText, MapPin, Camera, ChevronDown, ChevronUp } from 'lucide-react';
 import ProgressTimeline, { MiniTimeline } from '../components/ProgressTimeline';
@@ -104,7 +104,7 @@ const MyComplaints = () => {
                                 <div className="complaint-card-desc">{issue.description}</div>
                                 {issue.photo && (
                                     <img 
-                                        src={issue.photo.startsWith('http') ? issue.photo : `${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/').replace('/api/', '')}${issue.photo}`} 
+                                        src={getMediaUrl(issue.photo)} 
                                         alt={issue.title} 
                                         className="complaint-card-photo" 
                                     />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import api from '../api';
+import api, { getMediaUrl } from '../api';
 import { Flag, RotateCcw, MapPin, Camera, AlertTriangle } from 'lucide-react';
 
 const getTimeAgo = (dateStr) => {
@@ -82,7 +82,7 @@ const FlaggedIssues = () => {
 
                                 {issue.photo && (
                                     <img
-                                        src={issue.photo.startsWith('http') ? issue.photo : `${(import.meta.env.VITE_API_URL || 'http://localhost:8000/api/').replace('/api/', '')}${issue.photo}`}
+                                        src={getMediaUrl(issue.photo)}
                                         alt={issue.title}
                                         className="complaint-card-photo"
                                     />

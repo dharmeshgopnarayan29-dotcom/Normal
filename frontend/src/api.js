@@ -12,4 +12,16 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export const getMediaUrl = (photoPath) => {
+    if (!photoPath) return '';
+    if (photoPath.startsWith('http')) return photoPath;
+    
+    let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+    baseUrl = baseUrl.replace(/\/api\/?$/, '');
+    baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const path = photoPath.startsWith('/') ? photoPath : `/${photoPath}`;
+    
+    return `${baseUrl}${path}`;
+};
+
 export default api;
