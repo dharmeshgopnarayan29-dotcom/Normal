@@ -6,6 +6,7 @@ import ReportIssueModal from '../components/ReportIssueModal';
 import api from '../api';
 import { Camera, Plus, FileText, TrendingUp, Eye, MapPin, Download, Search, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const CitizenDashboard = () => {
     const { user } = useContext(AuthContext);
@@ -14,6 +15,7 @@ const CitizenDashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [locationQuery, setLocationQuery] = useState('');
     const [activeLocationFilter, setActiveLocationFilter] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => { 
         fetchIssues(); 
@@ -36,6 +38,7 @@ const CitizenDashboard = () => {
     };
 
     const handleSubmitReport = async (formData) => {
+        setSubmitting(true);
         try {
             await api.post('issues/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             setShowModal(false);
@@ -51,6 +54,8 @@ const CitizenDashboard = () => {
                 else errorMsg = JSON.stringify(data);
             }
             alert(errorMsg);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -200,7 +205,7 @@ const CitizenDashboard = () => {
                 </div>
             </div>
 
-            <ReportIssueModal isOpen={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmitReport} />
+            <ReportIssueModal isOpen={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmitReport} submitting={submitting} />
         </div>
     );
 };

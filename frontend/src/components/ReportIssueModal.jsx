@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { X, MapPin, Camera, Upload, Navigation, Map, CheckCircle2, AlertCircle } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -48,7 +49,7 @@ const MapController = ({ mapCenter, shouldInvalidate }) => {
 
 const DEFAULT_CENTER = [28.6139, 77.2090];
 
-const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
+const ReportIssueModal = ({ isOpen, onClose, onSubmit, submitting = false }) => {
     const [formData, setFormData] = useState({ title: '', description: '', category: 'roads' });
     const [address, setAddress] = useState('');
     const [position, setPosition] = useState(null);
@@ -364,8 +365,8 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit }) => {
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn-primary">
-                            <Upload size={16} /> Submit Report
+                        <button type="submit" disabled={submitting} className={`btn-primary ${submitting ? 'btn-loading' : ''}`}>
+                            {submitting ? <><LoadingSpinner size={16} color="white" /> Submitting...</> : <><Upload size={16} /> Submit Report</>}
                         </button>
                     </div>
                 </form>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send } from 'lucide-react';
 import api from '../api';
 import { MiniTimeline } from './ProgressTimeline';
+import LoadingSpinner from './LoadingSpinner';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -128,6 +129,9 @@ const CommentSection = ({ issueId, commentCount }) => {
 const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emptyTitle, emptyDesc }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
+    const [upvotingId, setUpvotingId] = useState(null);
+    const [flaggingId, setFlaggingId] = useState(null);
+    const [statusChangingId, setStatusChangingId] = useState(null);
 
     // Reset to page 1 if issues array changes length
     useEffect(() => {
@@ -154,19 +158,32 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
 
     // ── Upvote handler ──
     const handleUpvote = async (issueId) => {
+        setUpvotingId(issueId);
         try {
             await api.post(`issues/${issueId}/upvote/`);
             if (onRefresh) onRefresh();
         } catch (err) { console.error('Upvote failed', err); }
+        finally { setUpvotingId(null); }
     };
 
     // ── Flag toggle handler ──
     const handleFlag = async (issueId) => {
+        setFlaggingId(issueId);
         try {
             await api.post(`issues/${issueId}/flag/`);
             if (onRefresh) onRefresh();
         } catch (err) {
             console.error('Flag toggle failed', err);
+        } finally { setFlaggingId(null); }
+    };
+
+    // ── Status change wrapper ──
+    const handleStatusChange = async (issueId, status) => {
+        setStatusChangingId(issueId);
+        try {
+            await onStatusChange(issueId, status);
+        } finally {
+            setStatusChangingId(null);
         }
     };
 
@@ -226,24 +243,24 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
                                         {issue.category}
                                     </span>
 
-                                    {/* Upvote Button */}
                                     <button
                                         className={`action-icon-btn ${issue.has_upvoted ? 'active' : ''}`}
                                         onClick={() => handleUpvote(issue.id)}
+                                        disabled={upvotingId === issue.id}
                                         title={issue.has_upvoted ? 'Remove upvote' : 'Upvote'}
                                     >
-                                        <ThumbsUp size={14} fill={issue.has_upvoted ? 'currentColor' : 'none'} />
+                                        {upvotingId === issue.id ? <LoadingSpinner size={14} /> : <ThumbsUp size={14} fill={issue.has_upvoted ? 'currentColor' : 'none'} />}
                                         <span>{issue.upvote_count || 0}</span>
                                     </button>
 
-                                    {/* Flag Button — citizen only, toggleable */}
                                     {!isAdmin && (
                                         <button
                                             className={`action-icon-btn flag-btn-toggle ${issue.has_flagged ? 'flagged' : ''}`}
                                             onClick={() => handleFlag(issue.id)}
+                                            disabled={flaggingId === issue.id}
                                             title={issue.has_flagged ? 'Unflag this issue' : 'Flag this issue'}
                                         >
-                                            <Flag size={14} fill={issue.has_flagged ? 'currentColor' : 'none'} />
+                                            {flaggingId === issue.id ? <LoadingSpinner size={14} /> : <Flag size={14} fill={issue.has_flagged ? 'currentColor' : 'none'} />}
                                         </button>
                                     )}
 
@@ -260,22 +277,22 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
                                     <div className="quick-action-row !mt-0">
                                         {issue.status === 'pending' && (
                                             <>
-                                                <button className="quick-action-btn approve" onClick={() => onStatusChange(issue.id, 'verified')}>
-                                                    <Check size={14} /> Verify
+                                                <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'verified')}>
+                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Check size={14} />} Verify
                                                 </button>
-                                                <button className="quick-action-btn reject" onClick={() => onStatusChange(issue.id, 'rejected')}>
-                                                    <X size={14} /> Reject
+                                                <button className={`quick-action-btn reject ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'rejected')}>
+                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <X size={14} />} Reject
                                                 </button>
                                             </>
                                         )}
                                         {issue.status === 'verified' && (
-                                            <button className="quick-action-btn resolve" onClick={() => onStatusChange(issue.id, 'in_progress')}>
-                                                <Play size={14} /> Start
+                                            <button className={`quick-action-btn resolve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'in_progress')}>
+                                                {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Play size={14} />} Start
                                             </button>
                                         )}
                                         {issue.status === 'in_progress' && (
-                                            <button className="quick-action-btn approve" onClick={() => onStatusChange(issue.id, 'resolved')}>
-                                                <CheckCircle size={14} /> Resolve
+                                            <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'resolved')}>
+                                                {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <CheckCircle size={14} />} Resolve
                                             </button>
                                         )}
                                     </div>

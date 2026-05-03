@@ -5,6 +5,7 @@ import api from '../api';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { AlertTriangle, Clock, Users, CheckCircle2, ArrowUpRight, Minus, Filter, MapPin } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -53,6 +54,8 @@ const AdminDashboard = () => {
     const [filter, setFilter] = useState('all');
     const [adminLocation, setAdminLocation] = useState(null);
     const [geoError, setGeoError] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
 
     useEffect(() => {
         if ('geolocation' in navigator) {
@@ -71,21 +74,27 @@ const AdminDashboard = () => {
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
+        setLoading(true);
         try {
             const res = await api.get('issues/');
             setIssues(res.data);
         } catch (err) {
             console.error('Failed to fetch issues', err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const updateStatus = async (id, status) => {
+        setUpdatingId(id);
         try {
             await api.patch(`issues/${id}/`, { status });
             fetchData();
             if (selectedIssueId === id) setSelectedIssueId(null);
         } catch (err) {
             alert('Status update failed');
+        } finally {
+            setUpdatingId(null);
         }
     };
 
@@ -114,7 +123,7 @@ const AdminDashboard = () => {
         <div className="dashboard-bg">
             <Navbar />
             {/* ── Main 2-Column Split ── */}
-            <div className="max-w-[1600px] mx-auto pt-[100px] px-6 pb-8 relative z-10">
+            <div className="max-w-[1600px] mx-auto pt-[100px] px-4 sm:px-6 pb-8 relative z-10 page-transition">
 
                 {/* Page Header */}
                 <div className="page-header !mb-6">
@@ -188,7 +197,7 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* RIGHT COLUMN — Map + Issue Details      */}
-                    <div className="w-full lg:w-1/2 lg:sticky lg:top-[100px] lg:self-start flex flex-col gap-4" style={{ height: 'calc(100vh - 116px)' }}>
+                    <div className="w-full lg:w-1/2 lg:sticky lg:top-[100px] lg:self-start flex flex-col gap-4 lg:h-[calc(100vh-116px)]">
 
                         {/* Geo fallback message */}
                         {geoError && (
@@ -197,8 +206,8 @@ const AdminDashboard = () => {
                             </div>
                         )}
 
-                        {/* Map Card — takes ~38% of panel height */}
-                        <div className="glass !rounded-[18px] overflow-hidden shrink-0 flex flex-col bg-white border-gray-200" style={{ flex: '0 0 38%' }}>
+                        {/* Map Card */}
+                        <div className="glass !rounded-[18px] overflow-hidden shrink-0 flex flex-col bg-white border-gray-200 h-[280px] sm:h-[320px] lg:flex-[0_0_38%] lg:h-auto">
                             <div className="py-2.5 px-5 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
                                 <MapPin size={16} className="text-black" />
                                 <h3 className="text-[0.9rem] font-bold text-black">Live Map</h3>
@@ -272,13 +281,19 @@ const AdminDashboard = () => {
                                         <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-auto">
                                             <div className="text-[0.65rem] font-bold text-gray-500 tracking-wider uppercase mb-1">Admin Actions</div>
                                             {selectedIssue.status === 'pending' && (
-                                                <button className="btn-primary p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'verified')}>Approve Issue</button>
+                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'verified')}>
+                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} color="white" /> Approving...</> : 'Approve Issue'}
+                                                </button>
                                             )}
                                             {selectedIssue.status === 'verified' && (
-                                                <button className="btn-outline p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'in_progress')}>Mark In Progress</button>
+                                                <button className={`btn-outline p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'in_progress')}>
+                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} /> Updating...</> : 'Mark In Progress'}
+                                                </button>
                                             )}
                                             {selectedIssue.status === 'in_progress' && (
-                                                <button className="btn-primary p-2.5 text-[0.85rem] justify-center" onClick={() => updateStatus(selectedIssue.id, 'resolved')}>Mark Resolved</button>
+                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'resolved')}>
+                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} color="white" /> Resolving...</> : 'Mark Resolved'}
+                                                </button>
                                             )}
                                             <button className="btn-secondary p-2.5 text-[0.85rem] justify-center" onClick={() => setSelectedIssueId(null)}>Close Details</button>
                                         </div>

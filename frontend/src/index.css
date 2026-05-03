@@ -72,7 +72,7 @@
 
   /* === NAVBAR === */
   .navbar {
-    @apply fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3 py-2 px-3 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-300 w-auto max-w-[90vw];
+    @apply fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3 py-2 px-3 bg-white border border-gray-200 rounded-full shadow-md transition-all duration-300 w-auto max-w-[95vw];
   }
   .navbar-brand {
     @apply text-[1.15rem] font-extrabold text-black no-underline px-3 tracking-[-0.5px] whitespace-nowrap;
@@ -135,15 +135,20 @@
     .nav-center { display: none; }
     .mobile-menu-btn { display: block; }
     .mobile-nav.open { display: flex; }
-    .navbar { padding: 6px 12px; }
+    .navbar { padding: 6px 12px; top: 12px; }
+    .profile-btn span { display: none; }
   }
 
   /* === CITIZEN DASHBOARD LAYOUT === */
   .citizen-layout {
     @apply grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] gap-6 pt-[100px] px-8 pb-12 min-h-screen max-w-[1400px] mx-auto relative z-10 items-start;
+    animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   @media(max-width:1024px) {
-    .citizen-layout { @apply grid-cols-1 pt-[90px] px-6 pb-8; }
+    .citizen-layout { @apply grid-cols-1 pt-[90px] px-4 pb-8; }
+  }
+  @media(max-width:480px) {
+    .citizen-layout { @apply px-3 pt-[80px] gap-4 pb-6; }
   }
 
   /* === LEFT HERO PANEL === */
@@ -169,6 +174,11 @@
   }
   .left-sidebar::-webkit-scrollbar, .right-sidebar::-webkit-scrollbar {
     width: 0px; background: transparent;
+  }
+  @media(max-width:1024px) {
+    .left-sidebar, .right-sidebar {
+      @apply static h-auto overflow-visible;
+    }
   }
 
   /* === HERO ACTION CARD === */
@@ -387,8 +397,16 @@
   .modal-overlay {
     @apply fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2000] animate-[fadeIn_0.2s_ease] p-4;
   }
+  @media(max-width:480px) {
+    .modal-overlay { @apply p-2 items-end; }
+  }
   .modal-content {
     @apply bg-white border border-gray-200 rounded-[28px] w-full max-w-[640px] max-h-[90vh] flex flex-col overflow-hidden shadow-xl animate-[scaleIn_0.2s_ease];
+  }
+  @media(max-width:480px) {
+    .modal-content {
+      @apply rounded-t-[24px] rounded-b-none max-h-[95vh];
+    }
   }
   .modal-header {
     @apply flex justify-between items-center py-5 px-7 border-b border-gray-100 bg-white shrink-0;
@@ -423,7 +441,7 @@
 
   /* === TABLE === */
   .table-container {
-    @apply bg-white border-gray-200 rounded-custom overflow-hidden shadow-sm;
+    @apply bg-white border-gray-200 rounded-custom overflow-hidden shadow-sm overflow-x-auto;
   }
   .table-header {
     @apply py-5 px-6 border-b border-gray-200 flex justify-between items-center bg-white;
@@ -454,8 +472,16 @@
   .tabs {
     @apply flex gap-1 bg-gray-100 p-1 rounded-custom-sm mb-6 w-fit flex-wrap border border-gray-200;
   }
+  @media(max-width:640px) {
+    .tabs {
+      @apply w-full overflow-x-auto flex-nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+  }
   .tab-btn {
-    @apply py-2 px-4 border-none bg-transparent rounded-xl text-[0.85rem] font-bold text-gray-500 cursor-pointer transition-all duration-200 [font-family:inherit];
+    @apply py-2 px-4 border-none bg-transparent rounded-xl text-[0.85rem] font-bold text-gray-500 cursor-pointer transition-all duration-200 [font-family:inherit] whitespace-nowrap;
   }
   .tab-btn.active {
     @apply bg-black text-white shadow-sm;
@@ -467,12 +493,17 @@
   /* === PAGE CONTAINERS === */
   .container {
     @apply max-w-[1280px] mx-auto pt-[100px] px-8 pb-8 relative z-10;
+    animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .container-wide {
     @apply max-w-[1400px] mx-auto pt-[100px] px-8 pb-8 relative z-10;
+    animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   @media(max-width:768px) {
     .container, .container-wide { @apply pt-[90px] px-4 pb-6; }
+  }
+  @media(max-width:480px) {
+    .container, .container-wide { @apply pt-[80px] px-3 pb-4; }
   }
   .page-header {
     @apply mb-6;
@@ -541,6 +572,7 @@
   /* === ADMIN DASHBOARD LAYOUT === */
   .admin-layout {
     @apply flex flex-col gap-8 max-w-[1400px] mx-auto pb-12;
+    animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .admin-top-row {
     @apply grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6;
@@ -552,8 +584,16 @@
   .admin-map-container {
     @apply h-[450px] w-full bg-gray-50;
   }
+  @media(max-width:640px) {
+    .admin-map-container { @apply h-[280px]; }
+  }
   .admin-issue-details {
     @apply p-6 bg-white border-l border-gray-200 flex flex-col gap-4 overflow-y-auto max-h-[450px];
+  }
+  @media(max-width:1024px) {
+    .admin-issue-details {
+      @apply border-l-0 border-t;
+    }
   }
 
   .action-panel {
@@ -796,6 +836,14 @@
   }
 
   /* ── Timeline Animations ── */
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .page-transition {
+    animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
   @keyframes timelineFadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -812,5 +860,18 @@
     0% { transform: scale(0.8); opacity: 0; }
     60% { transform: scale(1.05); }
     100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* === BUTTON LOADING SPINNER === */
+  .btn-spinner {
+    animation: btnSpin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes btnSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .btn-loading {
+    @apply pointer-events-none opacity-70 cursor-not-allowed relative;
   }
 }
