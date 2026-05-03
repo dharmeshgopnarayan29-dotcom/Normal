@@ -41,7 +41,17 @@ const CitizenDashboard = () => {
             setShowModal(false);
             fetchIssues(activeLocationFilter);
             fetchUserIssues();
-        } catch (err) { alert('Failed to report issue.'); }
+        } catch (err) {
+            let errorMsg = 'Failed to report issue.';
+            if (err.response && err.response.data) {
+                const data = err.response.data;
+                if (data.address) errorMsg = Array.isArray(data.address) ? data.address[0] : data.address;
+                else if (data.detail) errorMsg = data.detail;
+                else if (typeof data === 'string') errorMsg = data;
+                else errorMsg = JSON.stringify(data);
+            }
+            alert(errorMsg);
+        }
     };
 
     const handleLocationSearch = (e) => {

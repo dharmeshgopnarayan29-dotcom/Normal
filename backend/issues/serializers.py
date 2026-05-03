@@ -140,12 +140,11 @@ class IssueSerializer(serializers.ModelSerializer):
         # Address provided but no coordinates → geocode
         if has_address and not has_coords:
             resolved_lat, resolved_lng = geocode_address(address)
-            if resolved_lat is None or resolved_lng is None:
-                raise serializers.ValidationError({
-                    'address': "We couldn't find this address. Please refine it or select on the map."
-                })
-            data['lat'] = resolved_lat
-            data['lng'] = resolved_lng
+            if resolved_lat is not None and resolved_lng is not None:
+                data['lat'] = resolved_lat
+                data['lng'] = resolved_lng
+            # Note: If Nominatim geocoding fails (e.g. rate limit on Render),
+            # we gracefully accept the address without coordinates instead of blocking submission.
 
         # Coordinates provided but no address → reverse geocode
         if has_coords and not has_address:
