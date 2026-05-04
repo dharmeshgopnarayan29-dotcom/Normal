@@ -80,9 +80,9 @@ const FlaggedIssues = () => {
 
                                 <div className="complaint-card-desc">{issue.description}</div>
 
-                                {issue.photo && (
+                                {issue.photo_url && (
                                     <img
-                                        src={getMediaUrl(issue.photo)}
+                                        src={issue.photo_url}
                                         alt={issue.title}
                                         className="complaint-card-photo"
                                     />

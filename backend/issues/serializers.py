@@ -71,6 +71,7 @@ class IssueSerializer(serializers.ModelSerializer):
     has_upvoted = serializers.SerializerMethodField()
     has_flagged = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Issue
@@ -97,6 +98,15 @@ class IssueSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.flags.filter(user=request.user).exists()
         return False
+
+    def get_photo_url(self, obj):
+        """Return the full absolute URL for the photo (Cloudinary or local media)."""
+        if not obj.photo:
+            return None
+        try:
+            return obj.photo.url
+        except Exception:
+            return None
 
     def get_timeline(self, obj):
         events = obj.timeline_events.all()

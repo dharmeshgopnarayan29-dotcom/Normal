@@ -102,9 +102,9 @@ const MyComplaints = () => {
                                     <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
                                 </div>
                                 <div className="complaint-card-desc">{issue.description}</div>
-                                {issue.photo && (
+                                {issue.photo_url && (
                                     <img 
-                                        src={getMediaUrl(issue.photo)} 
+                                        src={issue.photo_url} 
                                         alt={issue.title} 
                                         className="complaint-card-photo" 
                                     />
