@@ -221,6 +221,29 @@
     @apply bg-black text-white border-none hover:bg-gray-800;
   }
 
+  /* === DELETE BUTTON === */
+  .delete-btn {
+    @apply flex items-center justify-center w-[30px] h-[30px] rounded-full border border-gray-200 bg-white text-gray-400 cursor-pointer transition-all duration-200 shadow-sm shrink-0;
+  }
+  .delete-btn:hover {
+    @apply bg-red-50 border-red-200 text-red-500 scale-110 shadow-md;
+  }
+  .delete-btn:active {
+    @apply scale-95;
+  }
+  .delete-confirm-row {
+    @apply flex items-center gap-2 mt-3 pt-3 border-t border-red-100 animate-[fadeIn_0.15s_ease];
+  }
+  .delete-confirm-text {
+    @apply text-[0.8rem] font-semibold text-red-600 flex-1;
+  }
+  .delete-confirm-yes {
+    @apply py-1 px-3 rounded-lg bg-red-500 text-white text-[0.78rem] font-bold border-none cursor-pointer transition-all duration-150 hover:bg-red-600 [font-family:inherit];
+  }
+  .delete-confirm-no {
+    @apply py-1 px-3 rounded-lg bg-gray-100 text-gray-700 text-[0.78rem] font-bold border-none cursor-pointer transition-all duration-150 hover:bg-gray-200 [font-family:inherit];
+  }
+
   /* === STATS === */
   .stats-grid {
     @apply grid grid-cols-2 gap-4;

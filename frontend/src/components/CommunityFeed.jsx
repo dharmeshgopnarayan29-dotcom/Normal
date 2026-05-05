@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send } from 'lucide-react';
+import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send, Trash2 } from 'lucide-react';
 import api, { getMediaUrl } from '../api';
 import { MiniTimeline } from './ProgressTimeline';
 import LoadingSpinner from './LoadingSpinner';
@@ -126,12 +126,14 @@ const CommentSection = ({ issueId, commentCount }) => {
     );
 };
 
-const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emptyTitle, emptyDesc }) => {
+const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onDelete, emptyTitle, emptyDesc }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
     const [upvotingId, setUpvotingId] = useState(null);
     const [flaggingId, setFlaggingId] = useState(null);
     const [statusChangingId, setStatusChangingId] = useState(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     // Reset to page 1 if issues array changes length
     useEffect(() => {
@@ -187,6 +189,25 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
         }
     };
 
+    // ── Delete handler (admin only) ──
+    const handleDeleteConfirm = (issueId) => setConfirmDeleteId(issueId);
+    const handleDeleteCancel = () => setConfirmDeleteId(null);
+
+    const handleDelete = async (issueId) => {
+        setDeletingId(issueId);
+        try {
+            await api.delete(`issues/${issueId}/delete/`);
+            setConfirmDeleteId(null);
+            if (onDelete) onDelete(issueId);
+            else if (onRefresh) onRefresh();
+        } catch (err) {
+            console.error('Delete failed', err);
+            alert('Failed to delete complaint.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
         <div>
             <div className="section-header">
@@ -220,9 +241,20 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
                                         </span>
                                     </div>
                                 </div>
-                                <span className={`badge ${issue.status}`}>
-                                    {issue.status.replace('_', ' ')}
-                                </span>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className={`badge ${issue.status}`}>
+                                        {issue.status.replace('_', ' ')}
+                                    </span>
+                                    {isAdmin && (
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => handleDeleteConfirm(issue.id)}
+                                            title="Delete complaint"
+                                        >
+                                            <Trash2 size={13} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="complaint-card-desc">
@@ -235,6 +267,27 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, emp
                                     alt={issue.title}
                                     className="complaint-card-photo"
                                 />
+                            )}
+
+                            {/* Inline delete confirmation (admin) */}
+                            {isAdmin && confirmDeleteId === issue.id && (
+                                <div className="delete-confirm-row">
+                                    <span className="delete-confirm-text">🗑️ Delete this complaint permanently?</span>
+                                    <button
+                                        className="delete-confirm-yes"
+                                        onClick={() => handleDelete(issue.id)}
+                                        disabled={deletingId === issue.id}
+                                    >
+                                        {deletingId === issue.id ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
+                                    </button>
+                                    <button
+                                        className="delete-confirm-no"
+                                        onClick={handleDeleteCancel}
+                                        disabled={deletingId === issue.id}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
                             )}
 
                             <div className="complaint-card-footer flex-wrap">

@@ -190,6 +190,27 @@ class RestoreIssueView(APIView):
         return Response({'detail': 'Issue restored successfully.', 'is_flagged': False})
 
 
+# ── Delete an issue (owner or admin) ──
+
+class IssueDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            issue = Issue.objects.get(pk=pk)
+        except Issue.DoesNotExist:
+            return Response({'detail': 'Issue not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        is_admin = request.user.is_staff or getattr(request.user, 'role', '') == 'admin'
+        is_owner = issue.reported_by == request.user
+
+        if not (is_owner or is_admin):
+            return Response({'detail': 'You do not have permission to delete this complaint.'}, status=status.HTTP_403_FORBIDDEN)
+
+        issue.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 # ── Timeline endpoints ──
 
 class TimelineListView(generics.ListAPIView):

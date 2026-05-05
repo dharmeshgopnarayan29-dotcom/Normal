@@ -98,6 +98,11 @@ const AdminDashboard = () => {
         }
     };
 
+    const deleteIssue = (id) => {
+        setIssues(prev => prev.filter(i => i.id !== id));
+        if (selectedIssueId === id) setSelectedIssueId(null);
+    };
+
     const immediateCount = issues.filter(i => i.status === 'rejected').length;
     const pendingCount = issues.filter(i => i.status === 'pending').length;
     const assignedCount = issues.filter(i => i.status === 'in_progress' || i.status === 'verified').length;
@@ -191,6 +196,7 @@ const AdminDashboard = () => {
                             isAdmin={true}
                             onStatusChange={updateStatus}
                             onRefresh={fetchData}
+                            onDelete={deleteIssue}
                             emptyTitle={filter !== 'all' ? "No results found" : "No issues reported yet"}
                             emptyDesc={filter !== 'all' ? `No issues match the "${filter.replace('_', ' ')}" filter.` : "No pending issues to manage."}
                         />
