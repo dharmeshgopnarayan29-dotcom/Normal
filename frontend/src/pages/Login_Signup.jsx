@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -12,6 +13,8 @@ export default function AuthPage() {
   });
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -81,16 +84,25 @@ export default function AuthPage() {
                     required
                   />
                   <p className="text-[12px] pl-[10px] text-left text-slate-600 font-bold mb-1 mt-2">Password</p>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={loginData.password}
-                    onChange={(e) =>
-                      setLoginData({ ...loginData, password: e.target.value })
-                    }
-                    className="w-[92%] mx-auto my-1.5 p-2.5 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all"
-                    required
-                  />
+                  <div className="relative w-[92%] mx-auto">
+                    <input
+                      type={showLoginPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={loginData.password}
+                      onChange={(e) =>
+                        setLoginData({ ...loginData, password: e.target.value })
+                      }
+                      className="w-full my-1.5 p-2.5 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                    >
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   <button type="submit" disabled={loginLoading} className={`mt-5 mx-auto w-[60%] p-3 bg-black text-white font-bold rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.03] hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:scale-95 flex items-center justify-center gap-2 ${loginLoading ? 'btn-loading' : ''}`}>
                     {loginLoading ? <><LoadingSpinner size={18} color="white" /> Logging in...</> : 'Login'}
                   </button>
@@ -130,16 +142,25 @@ export default function AuthPage() {
                     className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
                     required
                   />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={signupData.password}
-                    onChange={(e) =>
-                      setSignupData({ ...signupData, password: e.target.value })
-                    }
-                    className="w-[92%] mx-auto my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm"
-                    required
-                  />
+                  <div className="relative w-[92%] mx-auto">
+                    <input
+                      type={showSignupPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={signupData.password}
+                      onChange={(e) =>
+                        setSignupData({ ...signupData, password: e.target.value })
+                      }
+                      className="w-full my-1.5 p-2 rounded-xl border border-gray-300 bg-white text-black placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 transition-all text-sm pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignupPassword(!showSignupPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                    >
+                      {showSignupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
 
                   <select
                     value={signupData.role}
