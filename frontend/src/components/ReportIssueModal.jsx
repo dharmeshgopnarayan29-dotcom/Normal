@@ -231,7 +231,7 @@ const ReportIssueModal = ({ isOpen, onClose, onSubmit, submitting = false }) => 
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div className="modal-overlay">
             <div className="modal-content">
                 <div className="modal-header">
                     <h2>Report a New Issue</h2>
