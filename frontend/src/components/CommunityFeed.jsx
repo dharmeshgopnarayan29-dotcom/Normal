@@ -226,7 +226,8 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onD
                     </div>
                 ) : (
                     paginatedIssues.map((issue, idx) => {
-                        const isOwner = user?.id === issue.reported_by;
+                        const isOwner = (user?.id && issue.reported_by && String(user.id) === String(issue.reported_by)) || 
+                                        (user?.username && issue.reporter_name && user.username === issue.reporter_name);
                         const canDelete = isAdmin || isOwner;
 
                         return (

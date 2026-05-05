@@ -106,7 +106,7 @@ const CitizenDashboard = () => {
                         <div className="w-[80px] h-[80px] rounded-full bg-black text-white flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
                             {initial}
                         </div>
-                        <h3 className="text-[1.25rem] font-bold text-black m-0">Hii {username}!</h3>
+                        <h3 className="text-[1.25rem] font-bold text-black m-0">Hii {user?.username || username}!</h3>
                     </div>
 
                     {/* Smart Location Card */}
@@ -184,7 +184,14 @@ const CitizenDashboard = () => {
                             <button onClick={handleClearLocation} className="text-black underline ml-1 cursor-pointer bg-transparent border-none text-[0.8rem] font-bold">Clear</button>
                         </div>
                     )}
-                    <CommunityFeed issues={issues} onRefresh={handleRefresh} />
+                    <CommunityFeed 
+                        issues={issues} 
+                        onRefresh={handleRefresh} 
+                        onDelete={(id) => {
+                            setIssues(prev => prev.filter(i => i.id !== id));
+                            fetchUserIssues(); // Also update user stats
+                        }}
+                    />
                 </div>
 
                 {/* RIGHT SIDEBAR: Actions & Stats */}
