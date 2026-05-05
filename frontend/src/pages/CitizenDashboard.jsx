@@ -102,19 +102,19 @@ const CitizenDashboard = () => {
                 {/* LEFT SIDEBAR: Profile & Personal Insights */}
                 <div className="left-sidebar">
                     {/* Keep Profile as Base */}
-                    <div className="glass text-center !p-6 py-8 bg-white border-gray-200">
-                        <div className="w-[80px] h-[80px] rounded-full bg-black text-white flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
+                    <div className="glass text-center !p-6 py-8">
+                        <div className="w-[80px] h-[80px] rounded-full text-white flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5" style={{background:'linear-gradient(135deg,#7c3aed,#d946ef)',boxShadow:'0 8px 24px rgba(139,92,246,0.35)'}}>
                             {initial}
                         </div>
-                        <h3 className="text-[1.25rem] font-bold text-black m-0">Hii {user?.username || username}!</h3>
+                        <h3 className="text-[1.25rem] font-bold text-gray-800 m-0">Hii {user?.username || username}!</h3>
                     </div>
 
                     {/* Smart Location Card */}
-                    <div className="glass !p-5 flex flex-col gap-1.5 bg-gray-50 border-gray-200">
-                        <div className="flex items-center gap-2 text-black font-bold text-[0.95rem]">
-                            <MapPin size={16} color="#000000" /> Whitefield, Bangalore
+                    <div className="glass !p-5 flex flex-col gap-1.5">
+                        <div className="flex items-center gap-2 font-bold text-[0.95rem]" style={{color:'#4c1d95'}}>
+                            <MapPin size={16} color="#7c3aed" /> Whitefield, Bangalore
                         </div>
-                        <span className="text-[0.8rem] text-gray-500 pl-6">Moderate issue activity in your area</span>
+                        <span className="text-[0.8rem] pl-6" style={{color:'rgba(76,29,149,0.65)'}}>Moderate issue activity in your area</span>
                     </div>
 
                     {/* Personal Summary */}
@@ -145,7 +145,7 @@ const CitizenDashboard = () => {
                             <div className="flex flex-col gap-3">
                                 {userIssues.slice(0, 3).map((issue, idx) => (
                                     <div key={issue.id || idx} className="flex gap-2.5 items-start">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-black mt-1.5 shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{background:'linear-gradient(135deg,#7c3aed,#d946ef)'}} />
                                         <div className="text-[0.85rem]">
                                             <div className="text-black font-medium mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">{issue.title}</div>
                                             <div className="text-gray-500 text-[0.75rem] capitalize">{issue.status.replace('_', ' ')} &middot; {issue.created_at ? new Date(issue.created_at).toLocaleDateString() : 'Recently'}</div>
@@ -174,7 +174,7 @@ const CitizenDashboard = () => {
                                 <X size={14} className="text-gray-500" />
                             </button>
                         )}
-                        <button type="submit" className="py-1.5 px-4 bg-black text-white text-[0.8rem] font-bold rounded-xl hover:bg-gray-800 transition-all">
+                        <button type="submit" className="py-1.5 px-4 text-white text-[0.8rem] font-bold rounded-xl transition-all duration-300" style={{background:'linear-gradient(135deg,#7c3aed,#d946ef)'}}>
                             Search
                         </button>
                     </form>
