@@ -226,9 +226,7 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onD
                     </div>
                 ) : (
                     paginatedIssues.map((issue, idx) => {
-                        const isOwner = (user?.id && issue.reported_by && String(user.id) === String(issue.reported_by)) || 
-                                        (user?.username && issue.reporter_name && user.username === issue.reporter_name);
-                        const canDelete = isAdmin || isOwner;
+                        const canDelete = isAdmin;
 
                         return (
                             <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
