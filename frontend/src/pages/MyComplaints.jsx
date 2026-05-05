@@ -21,12 +21,12 @@ const getTimeAgo = (dateStr) => {
 
 const getCategoryBgColor = (cat) => {
     switch (cat?.toLowerCase()) {
-        case 'roads': return 'bg-white border-gray-200';
-        case 'sanitation': return 'bg-white border-gray-200';
-        case 'electricity': return 'bg-white border-gray-200';
-        case 'water': return 'bg-white border-gray-200';
-        case 'public_safety': return 'bg-white border-gray-200';
-        default: return 'bg-white border-gray-200';
+        case 'roads': return '';
+        case 'sanitation': return '';
+        case 'electricity': return '';
+        case 'water': return '';
+        case 'public_safety': return '';
+        default: return '';
     }
 };
 
