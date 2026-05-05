@@ -104,7 +104,12 @@ class IssueSerializer(serializers.ModelSerializer):
         if not obj.photo:
             return None
         try:
-            return obj.photo.url
+            url = obj.photo.url
+            if url and not url.startswith('http'):
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(url)
+            return url
         except Exception:
             return None
 
