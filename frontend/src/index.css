@@ -63,40 +63,6 @@
     position: relative;
   }
 
-  /* === AUTH PAGE — Fluid Gradient Background === */
-  .auth-bg {
-    min-height: 100vh;
-    min-height: 100dvh;
-    position: relative;
-    overflow: hidden;
-    /* Base diagonal gradient: 135deg violet → purple → pink → cyan */
-    background: linear-gradient(
-      135deg,
-      #8b5cf6 0%,
-      #c084fc 35%,
-      #e879f9 65%,
-      #22d3ee 100%
-    );
-  }
-
-  /* SVG blob layer rendered as a pseudo-element so no extra DOM node is needed */
-  .auth-bg::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='b1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a5b4fc'/%3E%3Cstop offset='100%25' stop-color='%23c4b5fd'/%3E%3C/linearGradient%3E%3ClinearGradient id='b2' x1='100%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23c4b5fd'/%3E%3Cstop offset='100%25' stop-color='%23bfdbfe'/%3E%3C/linearGradient%3E%3ClinearGradient id='b3' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23bfdbfe'/%3E%3Cstop offset='100%25' stop-color='%23a5f3fc'/%3E%3C/linearGradient%3E%3ClinearGradient id='b4' x1='100%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23a5f3fc'/%3E%3Cstop offset='100%25' stop-color='%23a5b4fc'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M-120 80C80-60 480-40 620 120 760 280 700 460 560 560 420 660 160 620-20 500-200 380-320 220-120 80Z' fill='url(%23b1)' opacity='0.27'/%3E%3Cpath d='M900-80C1100-160 1560 20 1500 260 1440 500 1160 560 980 480 800 400 700 220 760 80 820-60 700 40 900-80Z' fill='url(%23b2)' opacity='0.26'/%3E%3Cpath d='M780 520C920 400 1200 440 1380 560 1560 680 1580 860 1440 940 1300 1020 1040 960 900 860 760 760 580 700 580 620 580 540 640 640 780 520Z' fill='url(%23b3)' opacity='0.29'/%3E%3Cpath d='M-100 560C60 440 280 480 400 600 520 720 460 880 300 940 140 1000-60 940-160 820-260 700-260 680-100 560Z' fill='url(%23b4)' opacity='0.24'/%3E%3C/svg%3E");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  /* Make sure children stack above the pseudo-element */
-  .auth-bg > * {
-    position: relative;
-    z-index: 1;
-  }
-
   /* === CARD MIXIN CLASSES === */
   .glass {
     @apply bg-white border-gray-200 rounded-custom shadow-sm;
