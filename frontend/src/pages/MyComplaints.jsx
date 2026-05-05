@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Navbar from '../components/Navbar';
-import api from '../api';
+import api, { getMediaUrl } from '../api';
 import { AuthContext } from '../context/AuthContext';
-import { FileText, MapPin, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { FileText, MapPin, Camera, ChevronDown, ChevronUp } from 'lucide-react';
 import ProgressTimeline, { MiniTimeline } from '../components/ProgressTimeline';
-import LoadingSpinner from '../components/LoadingSpinner';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -21,12 +20,12 @@ const getTimeAgo = (dateStr) => {
 
 const getCategoryBgColor = (cat) => {
     switch (cat?.toLowerCase()) {
-        case 'roads': return '';
-        case 'sanitation': return '';
-        case 'electricity': return '';
-        case 'water': return '';
-        case 'public_safety': return '';
-        default: return '';
+        case 'roads': return 'bg-white border-gray-200';
+        case 'sanitation': return 'bg-white border-gray-200';
+        case 'electricity': return 'bg-white border-gray-200';
+        case 'water': return 'bg-white border-gray-200';
+        case 'public_safety': return 'bg-white border-gray-200';
+        default: return 'bg-white border-gray-200';
     }
 };
 
@@ -35,13 +34,11 @@ const MyComplaints = () => {
     const [issues, setIssues] = useState([]);
     const [filter, setFilter] = useState('all');
     const [expandedId, setExpandedId] = useState(null);
-    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         const fetchMyIssues = async () => {
             try {
-                const res = await api.get('issues/my/');
+                const res = await api.get('issues/');
                 setIssues(res.data);
             } catch (err) {
                 console.error('Failed to fetch', err);
@@ -54,28 +51,6 @@ const MyComplaints = () => {
 
     const toggleTimeline = (id) => {
         setExpandedId(expandedId === id ? null : id);
-    };
-
-    const handleDeleteConfirm = (id) => {
-        setConfirmDeleteId(id);
-    };
-
-    const handleDeleteCancel = () => {
-        setConfirmDeleteId(null);
-    };
-
-    const handleDelete = async (id) => {
-        setDeletingId(id);
-        try {
-            await api.delete(`issues/${id}/delete/`);
-            setIssues(prev => prev.filter(i => i.id !== id));
-            setConfirmDeleteId(null);
-        } catch (err) {
-            console.error('Delete failed', err);
-            alert('Failed to delete complaint. Please try again.');
-        } finally {
-            setDeletingId(null);
-        }
     };
 
     return (
@@ -124,49 +99,15 @@ const MyComplaints = () => {
                                             <span>{issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => handleDeleteConfirm(issue.id)}
-                                            title="Delete complaint"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
-                                    </div>
+                                    <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
                                 </div>
-
                                 <div className="complaint-card-desc">{issue.description}</div>
-
-                                {issue.photo_url && (
+                                {issue.photo && (
                                     <img
-                                        src={issue.photo_url}
+                                        src={getMediaUrl(issue.photo)}
                                         alt={issue.title}
                                         className="complaint-card-photo"
                                     />
-                                )}
-
-                                {/* Inline delete confirmation */}
-                                {confirmDeleteId === issue.id && (
-                                    <div className="delete-confirm-row">
-                                        <span className="delete-confirm-text">
-                                            🗑️ Delete this complaint permanently?
-                                        </span>
-                                        <button
-                                            className="delete-confirm-yes"
-                                            onClick={() => handleDelete(issue.id)}
-                                            disabled={deletingId === issue.id}
-                                        >
-                                            {deletingId === issue.id ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
-                                        </button>
-                                        <button
-                                            className="delete-confirm-no"
-                                            onClick={handleDeleteCancel}
-                                            disabled={deletingId === issue.id}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
                                 )}
 
                                 {/* Mini Timeline */}
