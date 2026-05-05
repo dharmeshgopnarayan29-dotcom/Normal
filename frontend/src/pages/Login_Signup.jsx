@@ -41,8 +41,6 @@ export default function AuthPage() {
       setIsFlipped(false);
       setSignupData({ username: "", email: "", password: "", role: "citizen" });
     } catch (err) {
-      console.log(err.response?.status);
-      console.log(err.response?.data);
       alert('Registration Failed');
     } finally {
       setSignupLoading(false);

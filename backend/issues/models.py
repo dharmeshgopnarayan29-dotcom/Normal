@@ -1,9 +1,5 @@
 from django.db import models
 from django.conf import settings
-from PIL import Image
-import io
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import UploadedFile
 
 class Issue(models.Model):
     CATEGORY_CHOICES = (
@@ -35,48 +31,6 @@ class Issue(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
-        if self.photo:
-            # Check if photo has changed or is new
-            try:
-                # Only process if it's a new upload (UploadedFile instance)
-                if hasattr(self.photo, 'file') and isinstance(self.photo.file, UploadedFile):
-                    img = Image.open(self.photo)
-                    
-                    # Target Aspect Ratio 16:9
-                    target_ratio = 16 / 9
-                    width, height = img.size
-                    current_ratio = width / height
-
-                    if current_ratio > target_ratio:
-                        # Too wide, crop sides
-                        new_width = height * target_ratio
-                        offset = (width - new_width) / 2
-                        img = img.crop((offset, 0, width - offset, height))
-                    elif current_ratio < target_ratio:
-                        # Too tall, crop top and bottom
-                        new_height = width / target_ratio
-                        offset = (height - new_height) / 2
-                        img = img.crop((0, offset, width, height - offset))
-                    
-                    # Resize to standard width (e.g., 800px)
-                    if img.width > 800:
-                        output_size = (800, int(800 / target_ratio))
-                        img = img.resize(output_size, Image.Resampling.LANCZOS)
-
-                    # Save the processed image back to the field
-                    buffer = io.BytesIO()
-                    if img.mode in ("RGBA", "P"):
-                        img = img.convert("RGB")
-                    img.save(buffer, format='JPEG', quality=85)
-                    
-                    filename = self.photo.name
-                    self.photo.save(filename, ContentFile(buffer.getvalue()), save=False)
-            except Exception as e:
-                # Log error or handle silently
-                pass
-
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

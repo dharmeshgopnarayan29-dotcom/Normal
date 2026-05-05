@@ -38,7 +38,6 @@ const CitizenMapView = () => {
                     }
                 },
                 (error) => {
-                    console.log('Geolocation failed or denied. Using default location (Whitefield).');
                     setUserLocation({ lat: 12.9698, lng: 77.7499, name: 'Whitefield, Bangalore' });
                 }
             );
