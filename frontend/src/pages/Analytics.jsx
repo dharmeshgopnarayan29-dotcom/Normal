@@ -228,7 +228,7 @@ const Analytics = () => {
                 {/* 4. BREAKDOWN (CHARTS) */}
                 <div className="mb-[60px]">
                     <div className="section-label">Issue Breakdown</div>
-                    <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6">
+                    <div className="analytics-grid">
                         
                         {/* Bar Chart */}
                         <div className="chart-card">
