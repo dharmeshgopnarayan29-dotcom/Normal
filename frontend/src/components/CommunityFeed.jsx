@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { MapPin, Camera, Check, X, Play, CheckCircle, ChevronLeft, ChevronRight, ThumbsUp, Flag, MessageCircle, Send, Trash2 } from 'lucide-react';
 import api, { getMediaUrl } from '../api';
 import { MiniTimeline } from './ProgressTimeline';
 import LoadingSpinner from './LoadingSpinner';
+import { AuthContext } from '../context/AuthContext';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -127,6 +128,7 @@ const CommentSection = ({ issueId, commentCount }) => {
 };
 
 const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onDelete, emptyTitle, emptyDesc }) => {
+    const { user } = useContext(AuthContext);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
     const [upvotingId, setUpvotingId] = useState(null);
@@ -189,7 +191,7 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onD
         }
     };
 
-    // ── Delete handler (admin only) ──
+    // ── Delete handler (owner or admin) ──
     const handleDeleteConfirm = (issueId) => setConfirmDeleteId(issueId);
     const handleDeleteCancel = () => setConfirmDeleteId(null);
 
@@ -223,142 +225,147 @@ const CommunityFeed = ({ issues, isAdmin = false, onStatusChange, onRefresh, onD
                         <p>{emptyDesc || (isAdmin ? 'No pending issues to manage.' : 'Be the first to report an issue in your community.')}</p>
                     </div>
                 ) : (
-                    paginatedIssues.map((issue, idx) => (
-                        <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
-                            <div className="complaint-card-header">
-                                <div className="avatar">
-                                    {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
-                                </div>
-                                <div className="complaint-card-info">
-                                    <h3>{issue.title}</h3>
-                                    <div className="complaint-card-meta">
-                                        by {issue.reporter_name || 'Unknown'} • {getTimeAgo(issue.created_at)}
+                    paginatedIssues.map((issue, idx) => {
+                        const isOwner = user?.username === issue.reporter_name;
+                        const canDelete = isAdmin || isOwner;
+
+                        return (
+                            <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
+                                <div className="complaint-card-header">
+                                    <div className="avatar">
+                                        {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="complaint-card-location">
-                                        <MapPin size={12} className="shrink-0" />
-                                        <span title={issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}>
-                                            {issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}
-                                        </span>
+                                    <div className="complaint-card-info">
+                                        <h3>{issue.title}</h3>
+                                        <div className="complaint-card-meta">
+                                            by {issue.reporter_name || 'Unknown'} • {getTimeAgo(issue.created_at)}
+                                        </div>
+                                        <div className="complaint-card-location">
+                                            <MapPin size={12} className="shrink-0" />
+                                            <span title={issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}>
+                                                {issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className={`badge ${issue.status}`}>
-                                        {issue.status.replace('_', ' ')}
-                                    </span>
-                                    {isAdmin && (
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => handleDeleteConfirm(issue.id)}
-                                            title="Delete complaint"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="complaint-card-desc">
-                                {issue.description}
-                            </div>
-
-                            {issue.photo_url && (
-                                <img
-                                    src={issue.photo_url}
-                                    alt={issue.title}
-                                    className="complaint-card-photo"
-                                />
-                            )}
-
-                            {/* Inline delete confirmation (admin) */}
-                            {isAdmin && confirmDeleteId === issue.id && (
-                                <div className="delete-confirm-row">
-                                    <span className="delete-confirm-text">🗑️ Delete this complaint permanently?</span>
-                                    <button
-                                        className="delete-confirm-yes"
-                                        onClick={() => handleDelete(issue.id)}
-                                        disabled={deletingId === issue.id}
-                                    >
-                                        {deletingId === issue.id ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
-                                    </button>
-                                    <button
-                                        className="delete-confirm-no"
-                                        onClick={handleDeleteCancel}
-                                        disabled={deletingId === issue.id}
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            )}
-
-                            <div className="complaint-card-footer flex-wrap">
-                                <div className="flex items-center gap-3">
-                                    <span className={`badge ${getCategoryPillColor(issue.category)}`}>
-                                        {issue.category}
-                                    </span>
-
-                                    <button
-                                        className={`action-icon-btn ${issue.has_upvoted ? 'active' : ''}`}
-                                        onClick={() => handleUpvote(issue.id)}
-                                        disabled={upvotingId === issue.id}
-                                        title={issue.has_upvoted ? 'Remove upvote' : 'Upvote'}
-                                    >
-                                        {upvotingId === issue.id ? <LoadingSpinner size={14} /> : <ThumbsUp size={14} fill={issue.has_upvoted ? 'currentColor' : 'none'} />}
-                                        <span>{issue.upvote_count || 0}</span>
-                                    </button>
-
-                                    {!isAdmin && (
-                                        <button
-                                            className={`action-icon-btn flag-btn-toggle ${issue.has_flagged ? 'flagged' : ''}`}
-                                            onClick={() => handleFlag(issue.id)}
-                                            disabled={flaggingId === issue.id}
-                                            title={issue.has_flagged ? 'Unflag this issue' : 'Flag this issue'}
-                                        >
-                                            {flaggingId === issue.id ? <LoadingSpinner size={14} /> : <Flag size={14} fill={issue.has_flagged ? 'currentColor' : 'none'} />}
-                                        </button>
-                                    )}
-
-                                    {/* Flag count for admin */}
-                                    {isAdmin && issue.flag_count > 0 && (
-                                        <span className="action-icon-btn flagged" title={`${issue.flag_count} flag(s)`}>
-                                            <Flag size={14} fill="currentColor" />
-                                            <span>{issue.flag_count}</span>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <span className={`badge ${issue.status}`}>
+                                            {issue.status.replace('_', ' ')}
                                         </span>
-                                    )}
-                                </div>
-                                
-                                {isAdmin && onStatusChange && (
-                                    <div className="quick-action-row !mt-0">
-                                        {issue.status === 'pending' && (
-                                            <>
-                                                <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'verified')}>
-                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Check size={14} />} Verify
-                                                </button>
-                                                <button className={`quick-action-btn reject ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'rejected')}>
-                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <X size={14} />} Reject
-                                                </button>
-                                            </>
-                                        )}
-                                        {issue.status === 'verified' && (
-                                            <button className={`quick-action-btn resolve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'in_progress')}>
-                                                {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Play size={14} />} Start
+                                        {canDelete && (
+                                            <button
+                                                className="delete-btn"
+                                                onClick={() => handleDeleteConfirm(issue.id)}
+                                                title="Delete complaint"
+                                            >
+                                                <Trash2 size={13} />
                                             </button>
                                         )}
-                                        {issue.status === 'in_progress' && (
-                                            <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'resolved')}>
-                                                {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <CheckCircle size={14} />} Resolve
-                                            </button>
-                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="complaint-card-desc">
+                                    {issue.description}
+                                </div>
+
+                                {issue.photo_url && (
+                                    <img
+                                        src={issue.photo_url}
+                                        alt={issue.title}
+                                        className="complaint-card-photo"
+                                    />
+                                )}
+
+                                {/* Inline delete confirmation */}
+                                {canDelete && confirmDeleteId === issue.id && (
+                                    <div className="delete-confirm-row">
+                                        <span className="delete-confirm-text">🗑️ Delete this complaint permanently?</span>
+                                        <button
+                                            className="delete-confirm-yes"
+                                            onClick={() => handleDelete(issue.id)}
+                                            disabled={deletingId === issue.id}
+                                        >
+                                            {deletingId === issue.id ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
+                                        </button>
+                                        <button
+                                            className="delete-confirm-no"
+                                            onClick={handleDeleteCancel}
+                                            disabled={deletingId === issue.id}
+                                        >
+                                            Cancel
+                                        </button>
                                     </div>
                                 )}
+
+                                <div className="complaint-card-footer flex-wrap">
+                                    <div className="flex items-center gap-3">
+                                        <span className={`badge ${getCategoryPillColor(issue.category)}`}>
+                                            {issue.category}
+                                        </span>
+
+                                        <button
+                                            className={`action-icon-btn ${issue.has_upvoted ? 'active' : ''}`}
+                                            onClick={() => handleUpvote(issue.id)}
+                                            disabled={upvotingId === issue.id}
+                                            title={issue.has_upvoted ? 'Remove upvote' : 'Upvote'}
+                                        >
+                                            {upvotingId === issue.id ? <LoadingSpinner size={14} /> : <ThumbsUp size={14} fill={issue.has_upvoted ? 'currentColor' : 'none'} />}
+                                            <span>{issue.upvote_count || 0}</span>
+                                        </button>
+
+                                        {!isAdmin && (
+                                            <button
+                                                className={`action-icon-btn flag-btn-toggle ${issue.has_flagged ? 'flagged' : ''}`}
+                                                onClick={() => handleFlag(issue.id)}
+                                                disabled={flaggingId === issue.id}
+                                                title={issue.has_flagged ? 'Unflag this issue' : 'Flag this issue'}
+                                            >
+                                                {flaggingId === issue.id ? <LoadingSpinner size={14} /> : <Flag size={14} fill={issue.has_flagged ? 'currentColor' : 'none'} />}
+                                            </button>
+                                        )}
+
+                                        {/* Flag count for admin */}
+                                        {isAdmin && issue.flag_count > 0 && (
+                                            <span className="action-icon-btn flagged" title={`${issue.flag_count} flag(s)`}>
+                                                <Flag size={14} fill="currentColor" />
+                                                <span>{issue.flag_count}</span>
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    {isAdmin && onStatusChange && (
+                                        <div className="quick-action-row !mt-0">
+                                            {issue.status === 'pending' && (
+                                                <>
+                                                    <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'verified')}>
+                                                        {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Check size={14} />} Verify
+                                                    </button>
+                                                    <button className={`quick-action-btn reject ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'rejected')}>
+                                                        {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <X size={14} />} Reject
+                                                    </button>
+                                                </>
+                                            )}
+                                            {issue.status === 'verified' && (
+                                                <button className={`quick-action-btn resolve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'in_progress')}>
+                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <Play size={14} />} Start
+                                                </button>
+                                            )}
+                                            {issue.status === 'in_progress' && (
+                                                <button className={`quick-action-btn approve ${statusChangingId === issue.id ? 'btn-loading' : ''}`} disabled={statusChangingId === issue.id} onClick={() => handleStatusChange(issue.id, 'resolved')}>
+                                                    {statusChangingId === issue.id ? <LoadingSpinner size={14} /> : <CheckCircle size={14} />} Resolve
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mini Timeline */}
+                                <MiniTimeline timeline={issue.timeline} status={issue.status} />
+
+                                {/* Comment Section */}
+                                <CommentSection issueId={issue.id} commentCount={issue.comment_count} />
                             </div>
-
-                            {/* Mini Timeline */}
-                            <MiniTimeline timeline={issue.timeline} status={issue.status} />
-
-                            {/* Comment Section */}
-                            <CommentSection issueId={issue.id} commentCount={issue.comment_count} />
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
             {totalPages > 1 && (
