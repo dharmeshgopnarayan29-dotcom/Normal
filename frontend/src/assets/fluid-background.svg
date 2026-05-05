@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+  <defs>
+
+    <!-- Base diagonal gradient: 135deg, violet → soft purple → hot pink → cyan -->
+    <linearGradient id="base-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#8b5cf6"/>
+      <stop offset="35%"  stop-color="#c084fc"/>
+      <stop offset="65%"  stop-color="#e879f9"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+
+    <!-- Blob 1: pale lavender, top-left → bottom-right -->
+    <linearGradient id="blob1-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#a5b4fc"/>
+      <stop offset="100%" stop-color="#c4b5fd"/>
+    </linearGradient>
+
+    <!-- Blob 2: soft periwinkle → light sky blue, top-right → bottom-left -->
+    <linearGradient id="blob2-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#bfdbfe"/>
+    </linearGradient>
+
+    <!-- Blob 3: light sky blue → aqua, top-left → bottom-right -->
+    <linearGradient id="blob3-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#a5f3fc"/>
+    </linearGradient>
+
+    <!-- Blob 4: aqua → pale lavender, top-right → bottom-left -->
+    <linearGradient id="blob4-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#a5f3fc"/>
+      <stop offset="100%" stop-color="#a5b4fc"/>
+    </linearGradient>
+
+  </defs>
+
+  <!-- Base full-bleed gradient rectangle -->
+  <rect width="1440" height="900" fill="url(#base-gradient)"/>
+
+  <!--
+    Blob 1 — Large sweeping shape bleeding off top-left and left edges.
+    Pale lavender fill, TL→BR gradient, opacity 0.27.
+    Every cubic bezier has control points far from anchors for wide lava-lamp curves.
+  -->
+  <path
+    d="
+      M -120, 80
+      C  80, -60,   480, -40,  620, 120
+      C  760, 280,  700, 460,  560, 560
+      C  420, 660,  160, 620,  -20, 500
+      C -200, 380, -320, 220, -120, 80
+      Z
+    "
+    fill="url(#blob1-grad)"
+    opacity="0.27"
+  />
+
+  <!--
+    Blob 2 — Wide organic blob bleeding off the top-right corner.
+    Soft periwinkle→sky blue fill, TR→BL gradient, opacity 0.25.
+  -->
+  <path
+    d="
+      M  900, -80
+      C 1100, -160,  1560, 20,  1500, 260
+      C 1440, 500,  1160, 560,  980, 480
+      C  800, 400,  700, 220,  760, 80
+      C  820, -60,   700, 40,   900, -80
+      Z
+    "
+    fill="url(#blob2-grad)"
+    opacity="0.26"
+  />
+
+  <!--
+    Blob 3 — Serpentine blob bleeding off the bottom-right and right edges.
+    Light sky blue→aqua fill, TL→BR gradient, opacity 0.28.
+  -->
+  <path
+    d="
+      M  780, 520
+      C  920, 400, 1200, 440, 1380, 560
+      C 1560, 680, 1580, 860, 1440, 940
+      C 1300,1020, 1040, 960,  900, 860
+      C  760, 760,  580, 700,  580, 620
+      C  580, 540,  640, 640,  780, 520
+      Z
+    "
+    fill="url(#blob3-grad)"
+    opacity="0.29"
+  />
+
+  <!--
+    Blob 4 — Flowing crescent-like blob bleeding off the bottom-left edge.
+    Aqua→pale lavender fill, TR→BL gradient, opacity 0.23.
+  -->
+  <path
+    d="
+      M -100, 560
+      C   60, 440,  280, 480,  400, 600
+      C  520, 720,  460, 880,  300, 940
+      C  140,1000,  -60, 940, -160, 820
+      C -260, 700, -260, 680, -100, 560
+      Z
+    "
+    fill="url(#blob4-grad)"
+    opacity="0.24"
+  />
+
+</svg>
