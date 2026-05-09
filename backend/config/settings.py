@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users.apps.UsersConfig',
     'issues.apps.IssuesConfig',
+    'badges.apps.BadgesConfig',
 ]
 
 MIDDLEWARE = [

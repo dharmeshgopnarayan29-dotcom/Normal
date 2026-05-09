@@ -3,8 +3,10 @@ import Navbar from '../components/Navbar';
 import StatsBar from '../components/StatsBar';
 import CommunityFeed from '../components/CommunityFeed';
 import ReportIssueModal from '../components/ReportIssueModal';
+import BadgeShowcase from '../components/BadgeShowcase';
+import BadgeToast from '../components/BadgeToast';
 import api from '../api';
-import { Camera, Plus, FileText, TrendingUp, Eye, MapPin, Download, Search, X } from 'lucide-react';
+import { Plus, FileText, TrendingUp, Eye, MapPin, Search, X } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -16,6 +18,7 @@ const CitizenDashboard = () => {
     const [locationQuery, setLocationQuery] = useState('');
     const [activeLocationFilter, setActiveLocationFilter] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [newlyEarnedBadges, setNewlyEarnedBadges] = useState([]);
 
     useEffect(() => { 
         fetchIssues(); 
@@ -40,10 +43,14 @@ const CitizenDashboard = () => {
     const handleSubmitReport = async (formData) => {
         setSubmitting(true);
         try {
-            await api.post('issues/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const res = await api.post('issues/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             setShowModal(false);
             fetchIssues(activeLocationFilter);
             fetchUserIssues();
+            // Fire badge toast if any badges were newly earned
+            if (res.data?.newly_earned_badges?.length > 0) {
+                setNewlyEarnedBadges(res.data.newly_earned_badges);
+            }
         } catch (err) {
             let errorMsg = 'Failed to report issue.';
             if (err.response && err.response.data) {
@@ -101,7 +108,7 @@ const CitizenDashboard = () => {
             <div className="citizen-layout">
                 {/* LEFT SIDEBAR: Profile & Personal Insights */}
                 <div className="left-sidebar">
-                    {/* Keep Profile as Base */}
+                    {/* Profile Avatar */}
                     <div className="glass text-center !p-6 py-8 bg-white border-gray-200">
                         <div className="w-[80px] h-[80px] rounded-full bg-black text-white flex items-center justify-center text-[2.5rem] font-bold mx-auto mb-5 shadow-[0_8px_20px_rgba(0,0,0,0.15)]">
                             {initial}
@@ -109,12 +116,14 @@ const CitizenDashboard = () => {
                         <h3 className="text-[1.25rem] font-bold text-black m-0">Hii {user?.username || username}!</h3>
                     </div>
 
-                    {/* Smart Location Card */}
-                    <div className="glass !p-5 flex flex-col gap-1.5 bg-gray-50 border-gray-200">
-                        <div className="flex items-center gap-2 text-black font-bold text-[0.95rem]">
-                            <MapPin size={16} color="#000000" /> Whitefield, Bangalore
+                    {/* Tier Badge Widget */}
+                    <div className="glass !p-0 overflow-hidden border-gray-200">
+                        <div className="px-4 py-3 border-b border-gray-100">
+                            <h4 className="text-[0.8rem] text-gray-500 uppercase tracking-[1px] font-semibold m-0">Reporter Tier</h4>
                         </div>
-                        <span className="text-[0.8rem] text-gray-500 pl-6">Moderate issue activity in your area</span>
+                        <div className="p-4">
+                            <BadgeShowcase compact={true} />
+                        </div>
                     </div>
 
                     {/* Personal Summary */}
@@ -135,8 +144,6 @@ const CitizenDashboard = () => {
                             </div>
                         </div>
                     </div>
-
-
 
                     {/* Recent Activity */}
                     {userIssues.length > 0 && (
@@ -213,6 +220,9 @@ const CitizenDashboard = () => {
             </div>
 
             <ReportIssueModal isOpen={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmitReport} submitting={submitting} />
+
+            {/* Badge unlock toast — fires after submitting an issue */}
+            <BadgeToast badges={newlyEarnedBadges} />
         </div>
     );
 };

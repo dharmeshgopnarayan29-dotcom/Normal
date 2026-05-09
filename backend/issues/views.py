@@ -47,6 +47,19 @@ class IssueListCreateView(generics.ListCreateAPIView):
             performed_by=self.request.user,
             note='Complaint submitted by citizen',
         )
+        # ── Badge hooks ──
+        try:
+            from badges.evaluator import evaluate_badges, add_submission_karma
+            add_submission_karma(self.request.user)
+            self._newly_earned = evaluate_badges(self.request.user)
+        except Exception:
+            self._newly_earned = []
+
+    def create(self, request, *args, **kwargs):
+        self._newly_earned = []
+        response = super().create(request, *args, **kwargs)
+        response.data['newly_earned_badges'] = getattr(self, '_newly_earned', [])
+        return response
 
 
 class IssueDetailView(generics.RetrieveUpdateAPIView):
@@ -78,6 +91,27 @@ class IssueDetailView(generics.RetrieveUpdateAPIView):
                     note=note,
                     department=issue.assigned_department or '',
                 )
+
+            # ── Karma update for the issue reporter ──
+            try:
+                from badges.evaluator import update_karma, evaluate_badges
+                reporter = issue.reported_by
+                update_karma(reporter, new_status)
+                self._newly_earned = evaluate_badges(reporter)
+            except Exception:
+                self._newly_earned = []
+        else:
+            self._newly_earned = []
+
+    def update(self, request, *args, **kwargs):
+        self._newly_earned = []
+        response = super().update(request, *args, **kwargs)
+        response.data['newly_earned_badges'] = getattr(self, '_newly_earned', [])
+        return response
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 class AnalyticsView(APIView):
@@ -209,6 +243,62 @@ class IssueDeleteView(APIView):
 
         issue.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ── Reopen a resolved issue (original reporter only) ──
+
+class ReopenIssueView(APIView):
+    """
+    POST /api/issues/<pk>/reopen/
+    Allows the original reporter to reopen a resolved issue.
+    Creates a 'submitted' TimelineEvent and sets status back to 'pending'.
+    Triggers badge evaluation for 'comeback_reporter'.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            issue = Issue.objects.get(pk=pk)
+        except Issue.DoesNotExist:
+            return Response({'detail': 'Issue not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Only the original reporter can reopen
+        if issue.reported_by != request.user:
+            return Response(
+                {'detail': 'Only the original reporter can reopen this issue.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if issue.status != 'resolved':
+            return Response(
+                {'detail': 'Only resolved issues can be reopened.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        issue.status = 'pending'
+        issue.save(update_fields=['status'])
+
+        # Create reopen timeline event
+        TimelineEvent.objects.create(
+            issue=issue,
+            step='submitted',
+            performed_by=request.user,
+            note='Issue reopened by reporter — marking as pending for re-review.',
+        )
+
+        # ── Badge evaluation ──
+        newly_earned = []
+        try:
+            from badges.evaluator import evaluate_badges
+            newly_earned = evaluate_badges(request.user)
+        except Exception:
+            pass
+
+        return Response({
+            'detail': 'Issue reopened successfully.',
+            'status': issue.status,
+            'newly_earned_badges': newly_earned,
+        })
 
 
 # ── Timeline endpoints ──

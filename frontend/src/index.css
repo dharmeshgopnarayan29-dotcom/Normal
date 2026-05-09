@@ -1252,4 +1252,258 @@
   .btn-loading {
     @apply pointer-events-none opacity-70 cursor-not-allowed relative;
   }
-}
+
+  /* ═══════════════════════════════════════════════
+     BADGE SYSTEM
+  ═══════════════════════════════════════════════ */
+
+  /* ── Showcase wrapper ─────────────────────────── */
+  .badge-showcase {
+    @apply flex flex-col gap-6 mt-2;
+  }
+
+  .badge-showcase-loading {
+    @apply grid grid-cols-3 gap-3 mt-4;
+  }
+
+  .badge-skeleton {
+    @apply bg-gray-100 rounded-2xl h-[90px] animate-pulse;
+  }
+
+  .badge-showcase-header {
+    @apply bg-white border border-gray-200 rounded-custom p-5 shadow-sm;
+  }
+
+  .badge-showcase-title {
+    @apply flex items-center gap-3 mb-4;
+  }
+
+  .badge-showcase-title h3 {
+    @apply text-[1.05rem] font-bold text-black m-0 leading-tight;
+  }
+
+  .badge-showcase-title p {
+    @apply text-[0.8rem] text-gray-500 m-0 font-medium;
+  }
+
+  .badge-progress-bar {
+    @apply w-full h-2 bg-gray-100 rounded-full overflow-hidden;
+  }
+
+  .badge-progress-fill {
+    @apply h-full bg-black rounded-full transition-all duration-700;
+  }
+
+  /* ── Sections ─────────────────────────────────── */
+  .badge-section {
+    @apply bg-white border border-gray-200 rounded-custom p-5 shadow-sm;
+  }
+
+  .badge-section-title {
+    @apply text-[0.85rem] font-bold text-gray-500 uppercase tracking-wider mb-4 m-0;
+  }
+
+  /* ── Tier badge row ───────────────────────────── */
+  .badge-tier-row {
+    @apply flex gap-3;
+  }
+
+  .badge-tier-card {
+    @apply flex-1 flex flex-col items-center gap-1.5 p-4 rounded-2xl border-2 cursor-default transition-all duration-200 relative;
+  }
+
+  .badge-tier-card.earned {
+    @apply bg-white border-gray-300 shadow-sm;
+  }
+
+  .badge-tier-card.earned:hover {
+    @apply -translate-y-1 shadow-md border-gray-400;
+  }
+
+  .badge-tier-card.active-tier {
+    @apply border-black bg-gray-50 shadow-md;
+  }
+
+  .badge-tier-card.locked {
+    @apply bg-gray-50 border-gray-200 opacity-50;
+  }
+
+  .badge-tier-card-emoji {
+    @apply text-[2rem] leading-none;
+  }
+
+  .badge-tier-card-name {
+    @apply text-[0.72rem] font-bold text-black text-center leading-tight;
+  }
+
+  .badge-lock-icon {
+    @apply text-[0.8rem] text-gray-400;
+  }
+
+  .badge-earned-date {
+    @apply text-[0.65rem] text-gray-400 font-medium;
+  }
+
+  /* ── Achievement badge grid ───────────────────── */
+  .badge-grid {
+    @apply grid grid-cols-3 gap-3;
+  }
+
+  @media(max-width: 480px) {
+    .badge-grid {
+      @apply grid-cols-2;
+    }
+    .badge-tier-row {
+      @apply flex-col;
+    }
+  }
+
+  .badge-achievement-card {
+    @apply flex flex-col items-center gap-1.5 p-4 rounded-2xl border transition-all duration-200 cursor-default relative;
+  }
+
+  .badge-achievement-card.earned {
+    @apply bg-white border-gray-200 shadow-sm;
+  }
+
+  .badge-achievement-card.earned:hover {
+    @apply -translate-y-1 shadow-md border-gray-300;
+  }
+
+  .badge-achievement-card.locked {
+    @apply bg-gray-50 border-gray-100 opacity-40;
+  }
+
+  .badge-achievement-emoji {
+    @apply text-[2rem] leading-none;
+  }
+
+  .badge-achievement-name {
+    @apply text-[0.72rem] font-bold text-black text-center leading-tight;
+  }
+
+  /* ── Tooltip ──────────────────────────────────── */
+  .badge-tooltip {
+    @apply absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-black text-white rounded-xl py-2.5 px-3.5 w-[180px] z-[9999] shadow-xl animate-[fadeInDown_0.15s_ease] pointer-events-none;
+  }
+
+  .badge-tooltip::after {
+    content: '';
+    @apply absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent;
+    border-top-color: #000;
+  }
+
+  .badge-tooltip-name {
+    @apply text-[0.8rem] font-bold mb-1 leading-tight;
+  }
+
+  .badge-tooltip-desc {
+    @apply text-[0.72rem] text-gray-300 leading-relaxed;
+  }
+
+  .badge-tooltip-locked {
+    @apply text-[0.7rem] text-gray-400 mt-1.5 pt-1.5 border-t border-gray-700 font-medium;
+  }
+
+  /* ── Karma pill ───────────────────────────────── */
+  .karma-pill {
+    @apply inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 text-black text-[0.82rem] font-semibold py-1.5 px-3.5 rounded-full mx-auto mt-2;
+  }
+
+  /* ── Sidebar tier widget ──────────────────────── */
+  .badge-tier-widget {
+    @apply w-full;
+  }
+
+  .badge-tier-display {
+    @apply flex items-center gap-3;
+  }
+
+  .badge-tier-emoji {
+    @apply text-[2.2rem] leading-none shrink-0;
+  }
+
+  .badge-tier-info {
+    @apply flex flex-col;
+  }
+
+  .badge-tier-name {
+    @apply text-[0.9rem] font-bold text-black;
+  }
+
+  .badge-tier-desc {
+    @apply text-[0.75rem] text-gray-500 leading-relaxed;
+  }
+
+  .badge-tier-empty {
+    @apply flex items-center gap-3;
+  }
+
+  /* ── Toast notification ───────────────────────── */
+  .badge-toast-container {
+    @apply fixed bottom-6 right-6 flex flex-col gap-3 z-[9999];
+  }
+
+  @media(max-width: 480px) {
+    .badge-toast-container {
+      @apply bottom-4 right-4 left-4;
+    }
+  }
+
+  .badge-toast {
+    @apply relative flex items-start gap-4 bg-white border border-gray-200 rounded-2xl p-4 shadow-xl w-[340px] overflow-hidden;
+    animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media(max-width: 480px) {
+    .badge-toast {
+      @apply w-full;
+    }
+  }
+
+  .badge-toast-close {
+    @apply absolute top-3 right-3 w-[22px] h-[22px] rounded-full bg-gray-100 border-none cursor-pointer text-gray-500 flex items-center justify-center text-[0.85rem] font-bold leading-none transition-all duration-150 hover:bg-gray-200 hover:text-black;
+  }
+
+  .badge-toast-emoji {
+    @apply text-[2.5rem] leading-none shrink-0;
+  }
+
+  .badge-toast-body {
+    @apply flex flex-col gap-0.5 pr-5;
+  }
+
+  .badge-toast-title {
+    @apply text-[0.72rem] font-bold text-gray-400 uppercase tracking-wider;
+  }
+
+  .badge-toast-name {
+    @apply text-[1rem] font-extrabold text-black leading-tight;
+  }
+
+  .badge-toast-desc {
+    @apply text-[0.8rem] text-gray-500 leading-relaxed mt-0.5;
+  }
+
+  .badge-toast-progress {
+    @apply absolute bottom-0 left-0 h-[3px] bg-black rounded-b-2xl;
+    width: 100%;
+    animation: toastProgress 5s linear forwards;
+  }
+
+  @keyframes toastSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(40px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes toastProgress {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+}

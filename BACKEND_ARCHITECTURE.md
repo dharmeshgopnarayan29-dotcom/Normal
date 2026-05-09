@@ -14,8 +14,8 @@ graph TD
     B --> C[Authentication Layer: SimpleJWT]
     B --> D[Business Logic: Views & Serializers]
     D --> E[Data Layer: Django Models]
-    E --> F[(Database: PostgreSQL / SQLite)]
-    D --> G[Media Storage: File System]
+    E --> F[(Database: Neon PostgreSQL)]
+    D --> G[Media Storage: Cloudinary]
     D --> H[External APIs: Nominatim Geocoding]
 ```
 
@@ -27,7 +27,7 @@ graph TD
 *   **SimpleJWT**: Implements stateless authentication. Access tokens have a short lifespan, while refresh tokens allow users to stay logged in securely.
 *   **Permissions**: 
     *   `IsAuthenticated`: Most endpoints require a valid token.
-    *   `IsAdminUser`: Specific endpoints (like status updates or deletions) are restricted to administrators.
+    *   `IsAdminUser`: Specific endpoints (like restoring flagged issues or deleting reports) are restricted to administrators.
 *   **CORS**: `django-cors-headers` is configured to allow requests specifically from the frontend domain.
 
 ### B. App Modules
@@ -39,8 +39,12 @@ The backend is divided into two primary Django apps:
 
 2.  **`issues` App**:
     *   **Issue Model**: Stores title, description, category, status, coordinates, address, and photo references.
-    *   **Status Workflow**: Managed through a `CharField` with predefined choices (`pending`, `verified`, `in_progress`, `resolved`, `rejected`).
-    *   **Post-Save Signals/Overrides**: Handles automatic image processing.
+    *   **Related Models**: 
+        *   **Comment**: Allows discussion on issues.
+        *   **Upvote**: Tracks community support for issues.
+        *   **Flag**: Community moderation system to report inappropriate content.
+        *   **TimelineEvent**: Tracks the history of an issue's status updates and progress notes.
+    *   **Status Workflow**: Managed through a `CharField` with predefined choices (`pending`, `verified`, `in_progress`, `resolved`, `rejected`). Status changes automatically generate Timeline Events.
 
 ---
 
@@ -48,15 +52,15 @@ The backend is divided into two primary Django apps:
 
 ### A. The "Smart" Serializer
 The `IssueSerializer` is responsible for more than just data conversion; it handles **Location Intelligence**:
-*   **Geocoding**: If a user provides an address string, the serializer calls the Nominatim API to resolve `lat` and `lng`.
-*   **Reverse Geocoding**: If a user picks a point on a map, the serializer resolves the readable address.
+*   **Geocoding**: If a user provides an address string without coordinates, the serializer calls the Nominatim API to resolve `lat` and `lng`.
+*   **Reverse Geocoding**: If a user provides coordinates without an address, the serializer resolves the readable address.
 *   **Validation**: Ensures that every issue has at least one location source before saving.
 
-### B. Image Processing Pipeline (Pillow)
-When an image is uploaded, the backend doesn't just store it raw. The `Issue.save()` method performs:
-1.  **Aspect Ratio Correction**: Crops the image to a consistent 16:9 ratio.
-2.  **Normalization**: Resizes images to a standard width (800px) to balance quality and load times.
-3.  **Optimization**: Converts images to optimized JPEGs to minimize bandwidth usage.
+### B. Media Handling (Cloudinary)
+Unlike local file system storage, CivicFix integrates with **Cloudinary** for scalable, cloud-based media management.
+* Uploaded images are stored securely on Cloudinary servers.
+* `cloudinary_storage` integrates natively with Django's `ImageField`.
+* The `photo_url` is automatically serialized to provide absolute Cloudinary URLs to the frontend.
 
 ---
 
@@ -64,14 +68,16 @@ When an image is uploaded, the backend doesn't just store it raw. The `Issue.sav
 
 ### A. Production Stack
 *   **Web Server**: **Gunicorn** (Green Unicorn) is used as the WSGI HTTP Server. It is faster and more secure for production than Django's built-in `runserver`.
-*   **Static Management**: `WhiteNoise` (or Django's `collectstatic`) is used to serve CSS/JS files if needed, though the frontend is deployed separately.
+*   **Static Management**: `WhiteNoise` serves static files efficiently.
+*   **Database**: **Neon** (managed PostgreSQL) is configured via `dj-database-url`, moving away from local SQLite.
 
 ### B. Environment Configuration
 Required environment variables for production:
 *   `SECRET_KEY`: Django's unique secret.
 *   `DEBUG`: Set to `False` in production.
-*   `DATABASE_URL`: Connection string for the production PostgreSQL database.
+*   `DATABASE_URL`: Connection string for the Neon PostgreSQL database.
 *   `ALLOWED_HOSTS`: Domain names allowed to access the API.
+*   `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Credentials for cloud image storage.
 
 ---
 
@@ -85,10 +91,9 @@ backend/
 │   ├── serializers.py   # JWT & Signup logic
 │   └── views.py         # Auth endpoints
 ├── issues/              # Core domain logic
-│   ├── models.py        # Issue schema & image processing
+│   ├── models.py        # Issue, Comment, Upvote, Flag, TimelineEvent schemas
 │   ├── serializers.py   # Geocoding & validation
-│   └── views.py         # Issue CRUD & Analytics
-├── media/               # User-uploaded photos (issues_photos/)
+│   └── views.py         # Issue CRUD, Analytics & Social Features
 ├── manage.py            # CLI entry point
 └── requirements.txt     # Linux-optimized dependencies
 ```

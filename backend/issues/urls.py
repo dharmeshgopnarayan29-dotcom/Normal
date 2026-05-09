@@ -3,7 +3,7 @@ from .views import (
     IssueListCreateView, IssueDetailView, AnalyticsView, UserIssueListView,
     CommentListCreateView, UpvoteToggleView, FlagToggleView,
     FlaggedIssueListView, RestoreIssueView, IssueDeleteView,
-    TimelineListView, TimelineAddNoteView,
+    TimelineListView, TimelineAddNoteView, ReopenIssueView,
 )
 
 urlpatterns = [
@@ -17,6 +17,7 @@ urlpatterns = [
     path('<int:pk>/flag/', FlagToggleView.as_view(), name='issue-flag'),
     path('<int:pk>/restore/', RestoreIssueView.as_view(), name='issue-restore'),
     path('<int:pk>/delete/', IssueDeleteView.as_view(), name='issue-delete'),
+    path('<int:pk>/reopen/', ReopenIssueView.as_view(), name='issue-reopen'),
     path('<int:pk>/timeline/', TimelineListView.as_view(), name='issue-timeline'),
     path('<int:pk>/timeline/add/', TimelineAddNoteView.as_view(), name='issue-timeline-add'),
 ]

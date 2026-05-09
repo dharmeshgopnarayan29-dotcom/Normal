@@ -24,18 +24,19 @@ CivicFix uses **JWT (JSON Web Token)** for secure, stateless authentication.
 4. **Backend Processing**:
     - **Geocoding**: If only an address is provided, the backend uses **Nominatim** (OpenStreetMap) to find coordinates.
     - **Reverse Geocoding**: If only coordinates are provided, the backend finds the readable address.
-    - **Image Processing**: The `Issue.save()` method intercepts the upload, crops the photo to a **16:9 ratio**, and resizes it for dashboard consistency.
+    - **Image Storage**: The image is securely uploaded to **Cloudinary**, and the URL is saved to the database.
 5. **Feed Update**: The new issue appears in the "Community Feed" with a `PENDING` status.
+6. **Community Features**: Citizens can upvote (`/upvote/`), flag (`/flag/`), or comment (`/comments/`) on community issues. If an issue receives 5 flags, it is automatically hidden from public view until reviewed by an admin.
 
 ### C. Admin Workflow (Issue Management)
-1. **Monitoring**: Admins see all reported issues on their dashboard and live map.
-2. **Review**: Admin clicks an issue to see full details (Photo, Location, Reporter).
+1. **Monitoring**: Admins see all reported issues on their dashboard and live map, including those hidden via community flags.
+2. **Review**: Admin clicks an issue to see full details, location, reporter, and timeline history.
 3. **Status Lifecycle**:
     - **Verify**: Admin approves the report (`Verified`).
     - **Assign/In Progress**: Issue is being worked on (`In Progress`).
     - **Resolve**: Work is complete (`Resolved`).
     - **Reject**: Invalid report (`Rejected`).
-4. **Update**: Each change sends a `PATCH` request to `/api/issues/<id>/`.
+4. **Update**: Each change sends a `PATCH` request to `/api/issues/<id>/`, automatically logging a **TimelineEvent** to track the resolution journey. Admins can also manually add notes to the timeline.
 
 ---
 
@@ -45,11 +46,17 @@ CivicFix uses **JWT (JSON Web Token)** for secure, stateless authentication.
 | :--- | :--- | :--- | :--- |
 | `/api/users/login/` | `POST` | Authenticate user and return JWT tokens. | Public |
 | `/api/users/register/` | `POST` | Create a new Citizen or Admin account. | Public |
-| `/api/issues/` | `GET` | Fetch all reported issues. | Auth Required |
+| `/api/issues/` | `GET` | Fetch all reported issues (supports filtering). | Auth Required |
 | `/api/issues/` | `POST` | Report a new issue (Title, Desc, Category, Location, Photo). | Citizen |
 | `/api/issues/my/` | `GET` | Fetch only the issues reported by the current user. | Citizen |
 | `/api/issues/<id>/` | `PATCH` | Update issue status (e.g., Pending -> Verified). | Admin |
-| `/api/issues/<id>/` | `DELETE` | Remove an issue report. | Admin |
+| `/api/issues/<id>/delete/` | `DELETE` | Remove an issue report. | Owner/Admin |
+| `/api/issues/<id>/comments/` | `GET`/`POST` | List or create comments on an issue. | Auth Required |
+| `/api/issues/<id>/upvote/` | `POST` | Toggle an upvote on a specific issue. | Auth Required |
+| `/api/issues/<id>/flag/` | `POST` | Toggle a flag (report) on a specific issue. | Auth Required |
+| `/api/issues/flagged/` | `GET` | View issues hidden due to high flag count. | Admin |
+| `/api/issues/<id>/restore/` | `POST` | Restore a flagged issue and clear its flags. | Admin |
+| `/api/issues/<id>/timeline/` | `GET` | View the progress timeline of an issue. | Auth Required |
 
 ---
 
@@ -58,10 +65,10 @@ CivicFix uses **JWT (JSON Web Token)** for secure, stateless authentication.
 ### Backend (Django REST Framework)
 *   **Django**: Core web framework for routing, database management, and admin interface.
 *   **Django REST Framework (DRF)**: Powers the API layer, handling serialization and request/response cycles.
-*   **Pillow**: Used for high-quality **image processing** (cropping, resizing, and format conversion).
+*   **Cloudinary**: Remote storage for media files, removing local file dependency.
+*   **Neon / dj-database-url / Psycopg2**: Database adapters and URL parsing for connecting to managed PostgreSQL.
 *   **SimpleJWT**: Handles secure token-based authentication.
-*   **Psycopg2**: Database adapter for connecting to PostgreSQL.
-*   **CORS-headers**: Allows the React frontend (port 5173) to communicate with the Django backend (port 8000).
+*   **CORS-headers**: Allows the React frontend to communicate with the Django backend.
 
 ### Frontend (React + Vite)
 *   **React (v19)**: UI library for building a dynamic, responsive interface.
@@ -76,85 +83,20 @@ CivicFix uses **JWT (JSON Web Token)** for secure, stateless authentication.
 
 ## 4. Key Logic Implementations
 
-### Image Auto-Fit Logic
-To keep the UI consistent, the backend automatically crops every image:
-```python
-# In models.py
-target_ratio = 16 / 9
-if current_ratio > target_ratio:
-    # Too wide, crop sides
-elif current_ratio < target_ratio:
-    # Too tall, crop top/bottom
-```
-This ensures that whether a user uploads a portrait or landscape photo, it fits perfectly in the feed card without being stretched.
-
 ### Smart Geocoding
 The system supports dual-input for location:
 - If a user types "Indiranagar", the backend finds `(12.97, 77.64)`.
 - If a user clicks the map at `(12.97, 77.64)`, the backend fills in "Indiranagar, Bangalore".
-- This is handled in `serializers.py` using the **Nominatim API**.
+- This is handled in `serializers.py` using the **Nominatim API**, ensuring data completion even with partial user input.
 
+### Community Moderation & Flagging
+To maintain feed quality without constant admin intervention, a community flagging feature exists:
+- Users can click "Flag" to report spam or inappropriate content.
+- If an issue accumulates **5 unique flags**, its `is_flagged` status becomes `True`.
+- Flagged issues are automatically filtered out from the `IssueListCreateView` for regular citizens, while admins can still review and restore them via a dedicated dashboard view.
 
-
-Continue
-The workflow of CivicFix is built on a modern full-stack architecture using Django (REST Framework) for the backend and React for the frontend. Below is a detailed breakdown of the communication flow and API endpoints.
-
-1. User Authentication Workflow
-    This is the entry point for all users (Citizens and Admins).
-
-    Registration:
-    Action: User fills out the signup form.
-    Frontend: Calls api.post('users/register/', signupData).
-    Backend: POST /api/users/register/ (RegisterView) creates a new user in the database.
-    Login:
-    Action: User enters credentials.
-    Frontend: Calls api.post('users/login/', { username, password }).
-    Backend: POST /api/users/login/ (CustomTokenObtainPairView) validates credentials and returns a JWT (Access & Refresh tokens).
-    Token Storage:
-    The frontend stores the access_token in localStorage.
-    An Axios Interceptor (api.js) automatically attaches this token to the Authorization header for every subsequent request.
-
-2. Citizen Workflow (Reporting & Tracking)
-    Citizens use the platform to report local issues and track their progress.
-
-    Load Dashboard:
-    Frontend: Calls GET /api/issues/ to populate the community feed and GET /api/issues/my/ to show the user's specific activity.
-    Reporting an Issue:
-    Action: User clicks "Report New Issue" and fills the modal (Title, Description, Category, Image, Location).
-    Frontend: Calls POST /api/issues/ using multipart/form-data (to handle image uploads).
-    Backend: IssueListCreateView saves the issue and automatically associates it with the logged-in user (reported_by).
-    Viewing My Complaints:
-    Frontend: Navigates to MyComplaints.jsx which calls GET /api/issues/my/.
-    Backend: UserIssueListView filters the database to return only issues where reported_by == request.user.
-
-3. Admin Workflow (Management & Resolution)
-    Admins oversee all reports and update their progress.
-
-    Reviewing Issues:
-    Frontend: Calls GET /api/issues/ to see all community reports.
-    Updating Status:
-    Action: Admin clicks "Approve", "Mark In Progress", or "Resolved".
-    Frontend: Calls PATCH /api/issues/<id>/ with the new status (e.g., { "status": "verified" }).
-    Backend: IssueDetailView updates the record in the database.
-    Analytics:
-    Frontend: Navigates to Analytics.jsx which calls GET /api/issues/analytics/.
-    Backend: AnalyticsView performs database aggregation (e.g., Count) to return stats grouped by status and category.
-
-4. API Endpoints Table
-    Endpoint	Method	App	Description
-    /api/users/register/	POST	Users	Creates a new user account.
-    /api/users/login/	POST	Users	Authenticates user; returns JWT tokens.
-    /api/users/login/refresh/	POST	Users	Refreshes the access token using a refresh token.
-    /api/issues/	GET	Issues	Fetches all issues (supports filtering by status, category).
-    /api/issues/	POST	Issues	Creates a new issue (requires image/form data).
-    /api/issues/my/	GET	Issues	Fetches issues reported by the current logged-in user.
-    /api/issues/<id>/	GET	Issues	Fetches details of a specific issue.
-    /api/issues/<id>/	PATCH	Issues	Updates issue status (Admin only).
-    /api/issues/analytics/	GET	Issues	Returns counts of issues grouped by status and category.
-
-5. Technical Workflow Summary
-    Request: React component triggers an api call (Axios).
-    Security: Interceptor adds Bearer <token> to the header.
-    Routing: Django urls.py routes the request to the specific View class.
-    Logic: The View interacts with the Issue model, performs filtering/saving, and uses the IssueSerializer to convert database objects to JSON.
-    Response: JSON is sent back to React, which updates the state and re-renders the UI.
+### Progress Timeline Tracking
+Every issue lifecycle is tracked meticulously:
+- When a citizen submits a complaint, a `TimelineEvent` (step: "Submitted") is generated.
+- When an admin updates the issue status (e.g., from "Pending" to "Verified"), a `TimelineEvent` is automatically triggered.
+- Admins can optionally add manual notes to specific timeline steps, making the progression transparent to the citizen tracking the issue.
