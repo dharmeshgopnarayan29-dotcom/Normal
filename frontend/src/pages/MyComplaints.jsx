@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useMemo, useCallback, useContext } from 'react';
 import Navbar from '../components/Navbar';
-import api, { getMediaUrl } from '../api';
 import { AuthContext } from '../context/AuthContext';
 import { FileText, MapPin, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import ProgressTimeline, { MiniTimeline } from '../components/ProgressTimeline';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getMediaUrl } from '../api';
+import { useMyComplaints, useDeleteMyComplaint } from '../hooks/useMyComplaints';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -19,60 +20,37 @@ const getTimeAgo = (dateStr) => {
     return `${diffDays}d ago`;
 };
 
-const getCategoryBgColor = (cat) => {
-    switch (cat?.toLowerCase()) {
-        case 'roads': return 'bg-white border-gray-200';
-        case 'sanitation': return 'bg-white border-gray-200';
-        case 'electricity': return 'bg-white border-gray-200';
-        case 'water': return 'bg-white border-gray-200';
-        case 'public_safety': return 'bg-white border-gray-200';
-        default: return 'bg-white border-gray-200';
-    }
-};
-
 const MyComplaints = () => {
     const { user } = useContext(AuthContext);
-    const [issues, setIssues] = useState([]);
     const [filter, setFilter] = useState('all');
     const [expandedId, setExpandedId] = useState(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-    const [deletingId, setDeletingId] = useState(null);
 
-    useEffect(() => {
-        const fetchMyIssues = async () => {
-            try {
-                // Use the dedicated "my" endpoint to only get user's own issues
-                const res = await api.get('issues/my/');
-                setIssues(res.data);
-            } catch (err) {
-                console.error('Failed to fetch', err);
-            }
-        };
-        fetchMyIssues();
-    }, [user]);
+    // ── React Query ──
+    const { data: issues = [], isLoading } = useMyComplaints();
+    const deleteMutation = useDeleteMyComplaint();
 
-    const filteredIssues = filter === 'all' ? issues : issues.filter(i => i.status === filter);
+    // ── Derived filtered list (memoized) ──
+    const filteredIssues = useMemo(
+        () => filter === 'all' ? issues : issues.filter(i => i.status === filter),
+        [issues, filter]
+    );
 
-    const toggleTimeline = (id) => {
-        setExpandedId(expandedId === id ? null : id);
-    };
+    const toggleTimeline = useCallback((id) => {
+        setExpandedId(prev => prev === id ? null : id);
+    }, []);
 
-    const handleDeleteConfirm = (id) => setConfirmDeleteId(id);
-    const handleDeleteCancel = () => setConfirmDeleteId(null);
+    const handleDeleteConfirm = useCallback((id) => setConfirmDeleteId(id), []);
+    const handleDeleteCancel = useCallback(() => setConfirmDeleteId(null), []);
 
-    const handleDelete = async (id) => {
-        setDeletingId(id);
+    const handleDelete = useCallback(async (id) => {
         try {
-            await api.delete(`issues/${id}/delete/`);
-            setIssues(issues.filter(i => i.id !== id));
+            await deleteMutation.mutateAsync(id);
             setConfirmDeleteId(null);
-        } catch (err) {
-            console.error('Delete failed', err);
+        } catch {
             alert('Failed to delete complaint.');
-        } finally {
-            setDeletingId(null);
         }
-    };
+    }, [deleteMutation]);
 
     return (
         <div className="dashboard-bg">
@@ -83,7 +61,7 @@ const MyComplaints = () => {
                     <p className="subtitle">Track all your reported issues</p>
                 </div>
 
-                {/* Filter tabs */}
+                {/* Filter tabs — UI state, stays local */}
                 <div className="tabs">
                     {['all', 'pending', 'verified', 'in_progress', 'resolved', 'rejected'].map(status => (
                         <button
@@ -96,92 +74,92 @@ const MyComplaints = () => {
                     ))}
                 </div>
 
-                <div className="flex flex-col gap-4">
-                    {filteredIssues.length === 0 ? (
-                        <div className="empty-state">
-                            <FileText size={48} />
-                            <h3>No complaints found</h3>
-                            <p>You haven't reported any issues yet</p>
-                        </div>
-                    ) : (
-                        filteredIssues.map((issue, idx) => (
-                            <div key={issue.id} className={`complaint-card ${getCategoryBgColor(issue.category)}`} style={{ animationDelay: `${idx * 0.05}s` }}>
-                                <div className="complaint-card-header">
-                                    <div className="avatar">
-                                        {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="complaint-card-info">
-                                        <h3>{issue.title}</h3>
-                                        <div className="complaint-card-meta">
-                                            {getTimeAgo(issue.created_at)} • {issue.category}
-                                        </div>
-                                        <div className="complaint-card-location">
-                                            <MapPin size={12} />
-                                            <span>{issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => handleDeleteConfirm(issue.id)}
-                                            title="Delete complaint"
-                                        >
-                                            <Trash2 size={13} />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="complaint-card-desc">{issue.description}</div>
-                                {issue.photo_url && (
-                                    <img
-                                        src={issue.photo_url}
-                                        alt={issue.title}
-                                        className="complaint-card-photo"
-                                    />
-                                )}
-
-                                {/* Confirmation Row */}
-                                {confirmDeleteId === issue.id && (
-                                    <div className="delete-confirm-row">
-                                        <span className="delete-confirm-text">🗑️ Delete this complaint permanently?</span>
-                                        <button
-                                            className="delete-confirm-yes"
-                                            onClick={() => handleDelete(issue.id)}
-                                            disabled={deletingId === issue.id}
-                                        >
-                                            {deletingId === issue.id ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
-                                        </button>
-                                        <button
-                                            className="delete-confirm-no"
-                                            onClick={handleDeleteCancel}
-                                            disabled={deletingId === issue.id}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                )}
-
-                                {/* Mini Timeline */}
-                                <MiniTimeline timeline={issue.timeline} status={issue.status} />
-
-                                {/* Expand/Collapse Full Timeline */}
-                                <button
-                                    className="flex items-center gap-1.5 mt-2 py-1.5 px-3 rounded-xl text-[0.8rem] font-bold text-gray-500 bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-black w-full [font-family:inherit]"
-                                    onClick={() => toggleTimeline(issue.id)}
-                                >
-                                    {expandedId === issue.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                                    {expandedId === issue.id ? 'Hide Timeline' : 'View Full Timeline'}
-                                </button>
-
-                                {expandedId === issue.id && (
-                                    <div className="mt-2 py-3 px-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <ProgressTimeline timeline={issue.timeline} status={issue.status} />
-                                    </div>
-                                )}
+                {isLoading ? (
+                    <div className="flex justify-center py-16"><LoadingSpinner size={32} /></div>
+                ) : (
+                    <div className="flex flex-col gap-4">
+                        {filteredIssues.length === 0 ? (
+                            <div className="empty-state">
+                                <FileText size={48} />
+                                <h3>No complaints found</h3>
+                                <p>You haven't reported any issues yet</p>
                             </div>
-                        ))
-                    )}
-                </div>
+                        ) : (
+                            filteredIssues.map((issue) => (
+                                <div key={issue.id} className="complaint-card bg-white border-gray-200">
+                                    <div className="complaint-card-header">
+                                        <div className="avatar">
+                                            {(issue.reporter_name || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="complaint-card-info">
+                                            <h3>{issue.title}</h3>
+                                            <div className="complaint-card-meta">
+                                                {getTimeAgo(issue.created_at)} • {issue.category}
+                                            </div>
+                                            <div className="complaint-card-location">
+                                                <MapPin size={12} />
+                                                <span>{issue.address || (issue.lat && issue.lng ? `${issue.lat}, ${issue.lng}` : 'Location not available')}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className={`badge ${issue.status}`}>{issue.status.replace('_', ' ')}</span>
+                                            <button
+                                                className="delete-btn"
+                                                onClick={() => handleDeleteConfirm(issue.id)}
+                                                title="Delete complaint"
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="complaint-card-desc">{issue.description}</div>
+
+                                    {issue.photo_url && (
+                                        <img src={issue.photo_url} alt={issue.title} className="complaint-card-photo" />
+                                    )}
+
+                                    {/* Delete confirmation */}
+                                    {confirmDeleteId === issue.id && (
+                                        <div className="delete-confirm-row">
+                                            <span className="delete-confirm-text">🗑️ Delete this complaint permanently?</span>
+                                            <button
+                                                className="delete-confirm-yes"
+                                                onClick={() => handleDelete(issue.id)}
+                                                disabled={deleteMutation.isPending}
+                                            >
+                                                {deleteMutation.isPending ? <LoadingSpinner size={12} color="white" /> : 'Yes, Delete'}
+                                            </button>
+                                            <button
+                                                className="delete-confirm-no"
+                                                onClick={handleDeleteCancel}
+                                                disabled={deleteMutation.isPending}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    <MiniTimeline timeline={issue.timeline} status={issue.status} />
+
+                                    <button
+                                        className="flex items-center gap-1.5 mt-2 py-1.5 px-3 rounded-xl text-[0.8rem] font-bold text-gray-500 bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-black w-full [font-family:inherit]"
+                                        onClick={() => toggleTimeline(issue.id)}
+                                    >
+                                        {expandedId === issue.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                        {expandedId === issue.id ? 'Hide Timeline' : 'View Full Timeline'}
+                                    </button>
+
+                                    {expandedId === issue.id && (
+                                        <div className="mt-2 py-3 px-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <ProgressTimeline timeline={issue.timeline} status={issue.status} />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

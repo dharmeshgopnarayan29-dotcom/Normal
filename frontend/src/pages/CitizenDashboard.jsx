@@ -1,102 +1,74 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useCallback, useMemo, useContext } from 'react';
 import Navbar from '../components/Navbar';
 import StatsBar from '../components/StatsBar';
 import CommunityFeed from '../components/CommunityFeed';
 import ReportIssueModal from '../components/ReportIssueModal';
 import BadgeShowcase from '../components/BadgeShowcase';
 import BadgeToast from '../components/BadgeToast';
-import api from '../api';
-import { Plus, FileText, TrendingUp, Eye, MapPin, Search, X } from 'lucide-react';
+import { Plus, FileText, TrendingUp, Eye, Search, X, MapPin } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useComplaints, useAddComplaint } from '../hooks/useComplaints';
+import { useMyComplaints } from '../hooks/useMyComplaints';
 
 const CitizenDashboard = () => {
     const { user } = useContext(AuthContext);
-    const [issues, setIssues] = useState([]);
-    const [userIssues, setUserIssues] = useState([]);
-    const [showModal, setShowModal] = useState(false);
     const [locationQuery, setLocationQuery] = useState('');
     const [activeLocationFilter, setActiveLocationFilter] = useState('');
-    const [submitting, setSubmitting] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [newlyEarnedBadges, setNewlyEarnedBadges] = useState([]);
 
-    useEffect(() => { 
-        fetchIssues(); 
-        fetchUserIssues();
-    }, []);
+    // ── React Query: complaints feed (cached, instant on re-visit) ──
+    const { data: issues = [], isLoading: issuesLoading } = useComplaints(activeLocationFilter);
+    const { data: userIssues = [] } = useMyComplaints();
 
-    const fetchIssues = async (location = '') => {
-        try {
-            const params = location ? `?location=${encodeURIComponent(location)}` : '';
-            const res = await api.get(`issues/${params}`);
-            setIssues(res.data);
-        } catch (err) { console.error('Failed to fetch issues', err); }
-    };
+    // ── Mutations ──
+    const addComplaintMutation = useAddComplaint();
 
-    const fetchUserIssues = async () => {
-        try {
-            const res = await api.get('issues/my/');
-            setUserIssues(res.data);
-        } catch (err) { console.error('Failed to fetch user issues', err); }
-    };
+    // ── Derived stats (memoized — only recalculates when issues changes) ──
+    const totalComplaints = useMemo(() => issues.length, [issues]);
+    const resolvedCount = useMemo(() => issues.filter(i => i.status === 'resolved').length, [issues]);
+    const pendingCount = useMemo(() => issues.filter(i => i.status === 'pending').length, [issues]);
+    const userTotalComplaints = useMemo(() => userIssues.length, [userIssues]);
+    const userResolvedCount = useMemo(() => userIssues.filter(i => i.status === 'resolved').length, [userIssues]);
+    const userPendingCount = useMemo(() => userIssues.filter(i => i.status === 'pending').length, [userIssues]);
 
-    const handleSubmitReport = async (formData) => {
-        setSubmitting(true);
-        try {
-            const res = await api.post('issues/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            setShowModal(false);
-            fetchIssues(activeLocationFilter);
-            fetchUserIssues();
-            // Fire badge toast if any badges were newly earned
-            if (res.data?.newly_earned_badges?.length > 0) {
-                setNewlyEarnedBadges(res.data.newly_earned_badges);
-            }
-        } catch (err) {
-            let errorMsg = 'Failed to report issue.';
-            if (err.response && err.response.data) {
-                const data = err.response.data;
-                if (data.address) errorMsg = Array.isArray(data.address) ? data.address[0] : data.address;
-                else if (data.detail) errorMsg = data.detail;
-                else if (typeof data === 'string') errorMsg = data;
-                else errorMsg = JSON.stringify(data);
-            }
-            alert(errorMsg);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleLocationSearch = (e) => {
-        e.preventDefault();
-        setActiveLocationFilter(locationQuery.trim());
-        fetchIssues(locationQuery.trim());
-    };
-
-    const handleClearLocation = () => {
-        setLocationQuery('');
-        setActiveLocationFilter('');
-        fetchIssues('');
-    };
-
-    const handleRefresh = () => {
-        fetchIssues(activeLocationFilter);
-        fetchUserIssues();
-    };
-
-    const totalComplaints = issues.length;
-    const resolvedCount = issues.filter(i => i.status === 'resolved').length;
-    const pendingCount = issues.filter(i => i.status === 'pending').length;
-
-    // User Specific Stats
-    const userTotalComplaints = userIssues.length;
-    const userResolvedCount = userIssues.filter(i => i.status === 'resolved').length;
-    const userPendingCount = userIssues.filter(i => i.status === 'pending').length;
-
-    const stats = [
+    const stats = useMemo(() => [
         { icon: <FileText size={28} />, value: totalComplaints, label: 'Total Complaints', color: '#000000', bgColor: 'bg-white border-gray-200' },
         { icon: <TrendingUp size={28} />, value: resolvedCount, label: 'Resolved Issues', color: '#374151', bgColor: 'bg-white border-gray-200' },
         { icon: <Eye size={28} />, value: pendingCount, label: 'Pending Review', color: '#6b7280', bgColor: 'bg-white border-gray-200' },
-    ];
+    ], [totalComplaints, resolvedCount, pendingCount]);
+
+    // ── Handlers (useCallback so child components don't re-render unnecessarily) ──
+    const handleSubmitReport = useCallback(async (formData) => {
+        try {
+            const data = await addComplaintMutation.mutateAsync(formData);
+            setShowModal(false);
+            // Fire badge toast if any new badges were earned
+            if (data?.newly_earned_badges?.length > 0) {
+                setNewlyEarnedBadges(data.newly_earned_badges);
+            }
+        } catch (err) {
+            let errorMsg = 'Failed to report issue.';
+            if (err.response?.data) {
+                const d = err.response.data;
+                if (d.address) errorMsg = Array.isArray(d.address) ? d.address[0] : d.address;
+                else if (d.detail) errorMsg = d.detail;
+                else errorMsg = JSON.stringify(d);
+            }
+            alert(errorMsg);
+        }
+    }, [addComplaintMutation]);
+
+    const handleLocationSearch = useCallback((e) => {
+        e.preventDefault();
+        setActiveLocationFilter(locationQuery.trim());
+    }, [locationQuery]);
+
+    const handleClearLocation = useCallback(() => {
+        setLocationQuery('');
+        setActiveLocationFilter('');
+    }, []);
 
     const username = user?.email ? user.email.split('@')[0] : 'Citizen';
     const initial = username.charAt(0).toUpperCase();
@@ -106,7 +78,7 @@ const CitizenDashboard = () => {
             <Navbar />
 
             <div className="citizen-layout">
-                {/* LEFT SIDEBAR: Profile & Personal Insights */}
+                {/* LEFT SIDEBAR */}
                 <div className="left-sidebar">
                     {/* Profile Avatar */}
                     <div className="glass text-center !p-6 py-8 bg-white border-gray-200">
@@ -150,8 +122,8 @@ const CitizenDashboard = () => {
                         <div className="px-2 mt-auto">
                             <h4 className="text-[0.85rem] text-gray-500 uppercase tracking-[1px] mb-3 font-semibold">Recent Actions</h4>
                             <div className="flex flex-col gap-3">
-                                {userIssues.slice(0, 3).map((issue, idx) => (
-                                    <div key={issue.id || idx} className="flex gap-2.5 items-start">
+                                {userIssues.slice(0, 3).map((issue) => (
+                                    <div key={issue.id} className="flex gap-2.5 items-start">
                                         <div className="w-1.5 h-1.5 rounded-full bg-black mt-1.5 shrink-0" />
                                         <div className="text-[0.85rem]">
                                             <div className="text-black font-medium mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]">{issue.title}</div>
@@ -185,43 +157,42 @@ const CitizenDashboard = () => {
                             Search
                         </button>
                     </form>
+
                     {activeLocationFilter && (
                         <div className="flex items-center gap-2 mb-4 text-[0.8rem] text-gray-500 font-medium">
                             <MapPin size={12} /> Showing results for: <strong className="text-black">{activeLocationFilter}</strong>
                             <button onClick={handleClearLocation} className="text-black underline ml-1 cursor-pointer bg-transparent border-none text-[0.8rem] font-bold">Clear</button>
                         </div>
                     )}
-                    <CommunityFeed 
-                        issues={issues} 
-                        onRefresh={handleRefresh} 
-                        onDelete={(id) => {
-                            setIssues(prev => prev.filter(i => i.id !== id));
-                            fetchUserIssues(); // Also update user stats
-                        }}
-                    />
+
+                    {/* Pass issues from React Query — no manual onRefresh needed */}
+                    <CommunityFeed issues={issues} isLoading={issuesLoading} />
                 </div>
 
-                {/* RIGHT SIDEBAR: Actions & Stats */}
+                {/* RIGHT SIDEBAR */}
                 <div className="right-sidebar">
-                    {/* Hero Action Card */}
                     <div className="action-card glass bg-gray-50 border-gray-200">
                         <h3>Report Issues in Your Community</h3>
                         <p>Take photos, add descriptions, and track the progress of your complaints.</p>
                         <div className="action-buttons">
-                            <button className="btn-primary w-full justify-center p-4" onClick={() => setShowModal(true)}>
+                            <button
+                                className="btn-primary w-full justify-center p-4"
+                                onClick={() => setShowModal(true)}
+                            >
                                 <Plus size={18} /> Add Complaint
                             </button>
                         </div>
                     </div>
-
-                    {/* Stats Cards */}
                     <StatsBar stats={stats} />
                 </div>
             </div>
 
-            <ReportIssueModal isOpen={showModal} onClose={() => setShowModal(false)} onSubmit={handleSubmitReport} submitting={submitting} />
-
-            {/* Badge unlock toast — fires after submitting an issue */}
+            <ReportIssueModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSubmit={handleSubmitReport}
+                submitting={addComplaintMutation.isPending}
+            />
             <BadgeToast badges={newlyEarnedBadges} />
         </div>
     );

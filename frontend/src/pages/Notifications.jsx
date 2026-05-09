@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Navbar from '../components/Navbar';
-import api from '../api';
 import { Bell, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useNotifications } from '../hooks/useNotifications';
 
 const getTimeAgo = (dateStr) => {
     const now = new Date();
@@ -25,29 +26,10 @@ const getNotificationIcon = (status) => {
     }
 };
 
-const getNotificationColor = (status) => {
-    switch (status) {
-        case 'resolved': return 'bg-white border-gray-200';
-        case 'rejected': return 'bg-white border-gray-200';
-        case 'in_progress': return 'bg-white border-gray-200';
-        default: return 'bg-white border-gray-200';
-    }
-};
-
 const Notifications = () => {
-    const [issues, setIssues] = useState([]);
-
-    useEffect(() => {
-        const fetchIssues = async () => {
-            try {
-                const res = await api.get('issues/');
-                setIssues(res.data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)));
-            } catch (err) {
-                console.error('Failed to fetch', err);
-            }
-        };
-        fetchIssues();
-    }, []);
+    // useNotifications is cached — navigating away and back shows data instantly,
+    // with a silent background refetch after 15 seconds staleTime.
+    const { data: issues = [], isLoading } = useNotifications();
 
     return (
         <div className="dashboard-bg">
@@ -58,32 +40,38 @@ const Notifications = () => {
                     <p className="subtitle">Stay updated on your reported issues</p>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                    {issues.length === 0 ? (
-                        <div className="empty-state">
-                            <Bell size={48} />
-                            <h3>No notifications yet</h3>
-                            <p>You'll be notified when there are updates on your complaints</p>
-                        </div>
-                    ) : (
-                        issues.map((issue, idx) => (
-                            <div key={issue.id} className={`notification-card animate-[fadeInUp_0.3s_ease_forwards] ${getNotificationColor(issue.status)} ${issue.status !== 'resolved' ? 'unread' : ''}`} style={{ animationDelay: `${idx * 0.03}s` }}>
-                                {getNotificationIcon(issue.status)}
-                                <div className="flex-1">
-                                    <div className="font-semibold text-[0.9rem] mb-1">
-                                        {issue.title}
-                                    </div>
-                                    <div className="text-[0.85rem] text-slate-600">
-                                        Status changed to <span className={`badge ${issue.status} ml-1`}>{issue.status.replace('_', ' ')}</span>
-                                    </div>
-                                    <div className="text-[0.75rem] text-slate-500 mt-1.5">
-                                        {getTimeAgo(issue.updated_at)}
+                {isLoading ? (
+                    <div className="flex justify-center py-16"><LoadingSpinner size={32} /></div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {issues.length === 0 ? (
+                            <div className="empty-state">
+                                <Bell size={48} />
+                                <h3>No notifications yet</h3>
+                                <p>You'll be notified when there are updates on your complaints</p>
+                            </div>
+                        ) : (
+                            issues.map((issue, idx) => (
+                                <div
+                                    key={issue.id}
+                                    className={`notification-card animate-[fadeInUp_0.3s_ease_forwards] bg-white border-gray-200 ${issue.status !== 'resolved' ? 'unread' : ''}`}
+                                    style={{ animationDelay: `${idx * 0.03}s` }}
+                                >
+                                    {getNotificationIcon(issue.status)}
+                                    <div className="flex-1">
+                                        <div className="font-semibold text-[0.9rem] mb-1">{issue.title}</div>
+                                        <div className="text-[0.85rem] text-slate-600">
+                                            Status changed to <span className={`badge ${issue.status} ml-1`}>{issue.status.replace('_', ' ')}</span>
+                                        </div>
+                                        <div className="text-[0.75rem] text-slate-500 mt-1.5">
+                                            {getTimeAgo(issue.updated_at)}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

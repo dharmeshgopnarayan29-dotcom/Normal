@@ -1,23 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import api from '../api';
-import { AuthContext } from '../context/AuthContext';
-
-const TIER_ORDER = ['reporter_gold', 'reporter_silver', 'reporter_bronze'];
+import React, { useState } from 'react';
+import { useBadges } from '../hooks/useBadges';
 
 const BadgeShowcase = ({ compact = false }) => {
-    const { user } = useContext(AuthContext);
-    const [badgeData, setBadgeData] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [hoveredSlug, setHoveredSlug] = useState(null);
 
-    useEffect(() => {
-        api.get('badges/mine/')
-            .then(res => setBadgeData(res.data))
-            .catch(() => setBadgeData(null))
-            .finally(() => setLoading(false));
-    }, []);
+    // ── React Query: badge data cached for 2 minutes ──
+    const { data: badgeData, isLoading } = useBadges();
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="badge-showcase-loading">
                 {[...Array(6)].map((_, i) => (
@@ -29,11 +19,9 @@ const BadgeShowcase = ({ compact = false }) => {
 
     if (!badgeData) return null;
 
-    const { badges, highest_reporter_tier } = badgeData;
+    const { badges = [], highest_reporter_tier } = badgeData;
 
-    // Separate achievement vs tier badges
     const achievementBadges = badges.filter(b => b.type === 'achievement');
-    // For tier: show all 3 but highlight earned ones (only show highest in compact mode)
     const tierBadges = badges.filter(b => b.type === 'tier').sort((a, b) => (b.tier_level || 0) - (a.tier_level || 0));
     const highestTier = tierBadges.find(b => b.slug === highest_reporter_tier);
 
@@ -41,7 +29,6 @@ const BadgeShowcase = ({ compact = false }) => {
     const totalCount = badges.length;
 
     if (compact) {
-        // Compact: just show the highest tier badge
         return (
             <div className="badge-tier-widget">
                 {highestTier ? (
@@ -67,7 +54,7 @@ const BadgeShowcase = ({ compact = false }) => {
 
     return (
         <div className="badge-showcase">
-            {/* Header */}
+            {/* Header with progress bar */}
             <div className="badge-showcase-header">
                 <div className="badge-showcase-title">
                     <span style={{ fontSize: '1.4rem' }}>🏆</span>
@@ -76,16 +63,15 @@ const BadgeShowcase = ({ compact = false }) => {
                         <p>{earnedCount} of {totalCount} earned</p>
                     </div>
                 </div>
-                {/* Progress bar */}
                 <div className="badge-progress-bar">
                     <div
                         className="badge-progress-fill"
-                        style={{ width: `${(earnedCount / totalCount) * 100}%` }}
+                        style={{ width: `${totalCount > 0 ? (earnedCount / totalCount) * 100 : 0}%` }}
                     />
                 </div>
             </div>
 
-            {/* Reporter Tier section */}
+            {/* Reporter Tier */}
             <div className="badge-section">
                 <h4 className="badge-section-title">🎖️ Reporter Tier</h4>
                 <div className="badge-tier-row">
@@ -103,10 +89,7 @@ const BadgeShowcase = ({ compact = false }) => {
                                     {new Date(badge.earned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                 </div>
                             )}
-                            {!badge.earned && (
-                                <div className="badge-lock-icon">🔒</div>
-                            )}
-                            {/* Tooltip */}
+                            {!badge.earned && <div className="badge-lock-icon">🔒</div>}
                             {hoveredSlug === badge.slug && (
                                 <div className="badge-tooltip">
                                     <div className="badge-tooltip-name">{badge.emoji} {badge.name}</div>
@@ -119,7 +102,7 @@ const BadgeShowcase = ({ compact = false }) => {
                 </div>
             </div>
 
-            {/* Achievement badges grid */}
+            {/* Achievement Badges Grid */}
             <div className="badge-section">
                 <h4 className="badge-section-title">⭐ Achievement Badges</h4>
                 <div className="badge-grid">
@@ -137,7 +120,6 @@ const BadgeShowcase = ({ compact = false }) => {
                                     {new Date(badge.earned_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
                                 </div>
                             )}
-                            {/* Tooltip */}
                             {hoveredSlug === badge.slug && (
                                 <div className="badge-tooltip">
                                     <div className="badge-tooltip-name">{badge.emoji} {badge.name}</div>

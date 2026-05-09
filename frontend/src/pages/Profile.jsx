@@ -1,23 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import { User, Mail, Shield, LogOut, Star } from 'lucide-react';
+import { Mail, Shield, LogOut, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BadgeShowcase from '../components/BadgeShowcase';
-import api from '../api';
+import { useProfile } from '../hooks/useProfile';
 
 const Profile = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [karma, setKarma] = useState(null);
 
-    useEffect(() => {
-        // Fetch karma from badge endpoint (it's already fetched by BadgeShowcase,
-        // but we also expose it here via a separate lightweight call)
-        api.get('users/profile/karma/')
-            .then(res => setKarma(res.data.karma))
-            .catch(() => setKarma(null));
-    }, []);
+    // ── React Query: karma cached for 5 minutes ──
+    const { data: profileData } = useProfile();
+    const karma = profileData?.karma ?? null;
 
     const handleLogout = () => {
         logout();
@@ -80,7 +75,7 @@ const Profile = () => {
                     </button>
                 </div>
 
-                {/* Badge showcase — full grid */}
+                {/* Badge showcase — uses useBadges hook internally */}
                 <BadgeShowcase />
             </div>
         </div>

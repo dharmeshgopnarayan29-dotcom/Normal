@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import CommunityFeed from '../components/CommunityFeed';
-import api from '../api';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { AlertTriangle, Clock, Users, CheckCircle2, ArrowUpRight, Minus, Filter, MapPin } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { AlertTriangle, Clock, Users, CheckCircle2, ArrowUpRight, Filter, MapPin } from 'lucide-react';
+import { useComplaints, useUpdateStatus } from '../hooks/useComplaints';
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -26,127 +25,90 @@ const adminLocationIcon = L.divIcon({
     popupAnchor: [0, -10],
 });
 
-// Watches for adminLocation and flies to it once available
-const MapLocationUpdater = ({ adminLocation, fallbackCenter, zoom }) => {
+const MapLocationUpdater = ({ adminLocation, zoom }) => {
     const map = useMap();
     const hasFlown = useRef(false);
-
     useEffect(() => {
         if (adminLocation && !hasFlown.current) {
             hasFlown.current = true;
             map.flyTo([adminLocation.lat, adminLocation.lng], zoom, { duration: 1.2 });
         }
     }, [adminLocation, zoom, map]);
-
-    // On mount, if no adminLocation yet, just make sure tiles render
-    useEffect(() => {
-        map.invalidateSize();
-    }, [map]);
-
+    useEffect(() => { map.invalidateSize(); }, [map]);
     return null;
 };
 
 const DEFAULT_CENTER = [28.6139, 77.2090];
 
 const AdminDashboard = () => {
-    const [issues, setIssues] = useState([]);
     const [selectedIssueId, setSelectedIssueId] = useState(null);
     const [filter, setFilter] = useState('all');
     const [adminLocation, setAdminLocation] = useState(null);
     const [geoError, setGeoError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [updatingId, setUpdatingId] = useState(null);
+
+    // ── React Query ──
+    const { data: issues = [], isLoading } = useComplaints();
+    const updateStatusMutation = useUpdateStatus();
 
     useEffect(() => {
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    setAdminLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                },
-                () => {
-                    setGeoError("Couldn't access your current location. Showing default map area.");
-                },
+                (pos) => setAdminLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => setGeoError("Couldn't access your current location. Showing default map area."),
                 { timeout: 8000 }
             );
         }
     }, []);
 
-    useEffect(() => { fetchData(); }, []);
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('issues/');
-            setIssues(res.data);
-        } catch (err) {
-            console.error('Failed to fetch issues', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateStatus = async (id, status) => {
-        setUpdatingId(id);
-        try {
-            await api.patch(`issues/${id}/`, { status });
-            fetchData();
-            if (selectedIssueId === id) setSelectedIssueId(null);
-        } catch (err) {
-            alert('Status update failed');
-        } finally {
-            setUpdatingId(null);
-        }
-    };
-
-    const deleteIssue = (id) => {
-        setIssues(prev => prev.filter(i => i.id !== id));
+    const handleUpdateStatus = useCallback(async (id, status) => {
+        await updateStatusMutation.mutateAsync({ id, status });
         if (selectedIssueId === id) setSelectedIssueId(null);
-    };
+    }, [updateStatusMutation, selectedIssueId]);
 
-    const immediateCount = issues.filter(i => i.status === 'rejected').length;
-    const pendingCount = issues.filter(i => i.status === 'pending').length;
-    const assignedCount = issues.filter(i => i.status === 'in_progress' || i.status === 'verified').length;
-    const completedCount = issues.filter(i => i.status === 'resolved').length;
+    // ── Derived (memoized) ──
+    const displayedIssues = useMemo(
+        () => filter === 'all' ? issues : issues.filter(i => i.status === filter),
+        [issues, filter]
+    );
+    const selectedIssue = useMemo(
+        () => issues.find(i => i.id === selectedIssueId),
+        [issues, selectedIssueId]
+    );
 
-    const stats = [
-        { icon: <AlertTriangle size={24} />, value: immediateCount, label: 'Immediate', color: '#000000', trend: '+2', trendType: 'negative', bgColor: 'bg-white border-gray-200' },
-        { icon: <Clock size={24} />, value: pendingCount, label: 'Pending', color: '#374151', trend: '-5%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
-        { icon: <Users size={24} />, value: assignedCount, label: 'Active', color: '#374151', trend: '+12%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
-        { icon: <CheckCircle2 size={24} />, value: completedCount, label: 'Completed', color: '#000000', trend: '+8%', trendType: 'positive', bgColor: 'bg-white border-gray-200' },
-    ];
+    const immediateCount = useMemo(() => issues.filter(i => i.status === 'rejected').length, [issues]);
+    const pendingCount = useMemo(() => issues.filter(i => i.status === 'pending').length, [issues]);
+    const assignedCount = useMemo(() => issues.filter(i => i.status === 'in_progress' || i.status === 'verified').length, [issues]);
+    const completedCount = useMemo(() => issues.filter(i => i.status === 'resolved').length, [issues]);
+
+    const stats = useMemo(() => [
+        { icon: <AlertTriangle size={24} />, value: immediateCount, label: 'Immediate', color: '#000000', trend: '+2', bgColor: 'bg-white border-gray-200' },
+        { icon: <Clock size={24} />, value: pendingCount, label: 'Pending', color: '#374151', trend: '-5%', bgColor: 'bg-white border-gray-200' },
+        { icon: <Users size={24} />, value: assignedCount, label: 'Active', color: '#374151', trend: '+12%', bgColor: 'bg-white border-gray-200' },
+        { icon: <CheckCircle2 size={24} />, value: completedCount, label: 'Completed', color: '#000000', trend: '+8%', bgColor: 'bg-white border-gray-200' },
+    ], [immediateCount, pendingCount, assignedCount, completedCount]);
 
     const effectiveCenter = adminLocation
         ? [adminLocation.lat, adminLocation.lng]
-        : issues.length > 0
-            ? [parseFloat(issues[0].lat), parseFloat(issues[0].lng)]
-            : DEFAULT_CENTER;
-
-    const displayedIssues = filter === 'all' ? issues : issues.filter(i => i.status === filter);
-    const selectedIssue = issues.find(i => i.id === selectedIssueId);
+        : issues.length > 0 ? [parseFloat(issues[0].lat), parseFloat(issues[0].lng)] : DEFAULT_CENTER;
 
     return (
         <div className="dashboard-bg">
             <Navbar />
-            {/* ── Main 2-Column Split ── */}
             <div className="max-w-[1600px] mx-auto pt-[100px] px-4 sm:px-6 pb-8 relative z-10 page-transition">
-
-                {/* Page Header */}
                 <div className="page-header !mb-6">
                     <h1>Admin Dashboard</h1>
                     <span className="role-badge">Admin</span>
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-6 items-start">
-
-                    {/* LEFT COLUMN — Complaint Management     */}
+                    {/* LEFT COLUMN */}
                     <div className="w-full lg:w-1/2 flex flex-col gap-5">
-
                         {/* Stats Row */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {stats.map((stat, index) => (
                                 <div key={index} className={`glass-card !p-4 !rounded-[18px] relative overflow-hidden ${stat.bgColor}`} style={{ animationDelay: `${index * 0.05}s` }}>
                                     {stat.trend && (
-                                        <div className={`absolute top-3 right-3 flex items-center gap-0.5 text-[0.7rem] font-bold py-0.5 px-1.5 rounded-lg bg-gray-50 text-gray-700`}>
+                                        <div className="absolute top-3 right-3 flex items-center gap-0.5 text-[0.7rem] font-bold py-0.5 px-1.5 rounded-lg bg-gray-50 text-gray-700">
                                             <ArrowUpRight size={10} />{stat.trend}
                                         </div>
                                     )}
@@ -180,39 +142,31 @@ const AdminDashboard = () => {
                             </div>
                             {filter !== 'all' && (
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[0.85rem] text-black">
-                                        <strong className="text-black">{displayedIssues.length}</strong> results
-                                    </span>
-                                    <button className="btn-secondary btn-sm py-1 px-2.5 text-[0.75rem]" onClick={() => setFilter('all')}>
-                                        Clear
-                                    </button>
+                                    <span className="text-[0.85rem] text-black"><strong>{displayedIssues.length}</strong> results</span>
+                                    <button className="btn-secondary btn-sm py-1 px-2.5 text-[0.75rem]" onClick={() => setFilter('all')}>Clear</button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Complaint Feed */}
+                        {/* Complaint Feed — React Query handles data, no onRefresh needed */}
                         <CommunityFeed
                             issues={displayedIssues}
                             isAdmin={true}
-                            onStatusChange={updateStatus}
-                            onRefresh={fetchData}
-                            onDelete={deleteIssue}
+                            isLoading={isLoading}
+                            onStatusChange={handleUpdateStatus}
                             emptyTitle={filter !== 'all' ? "No results found" : "No issues reported yet"}
                             emptyDesc={filter !== 'all' ? `No issues match the "${filter.replace('_', ' ')}" filter.` : "No pending issues to manage."}
                         />
                     </div>
 
-                    {/* RIGHT COLUMN — Map + Issue Details      */}
+                    {/* RIGHT COLUMN — Map + Issue Details */}
                     <div className="w-full lg:w-1/2 lg:sticky lg:top-[100px] lg:self-start flex flex-col gap-4 lg:h-[calc(100vh-116px)]">
-
-                        {/* Geo fallback message */}
                         {geoError && (
                             <div className="flex items-center gap-2 py-2 px-4 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[0.8rem] font-medium shrink-0">
                                 <AlertTriangle size={14} className="shrink-0" /> {geoError}
                             </div>
                         )}
-
-                        {/* Map Card */}
+                        {/* Map */}
                         <div className="glass !rounded-[18px] overflow-hidden shrink-0 flex flex-col bg-white border-gray-200 h-[280px] sm:h-[320px] lg:flex-[0_0_38%] lg:h-auto">
                             <div className="py-2.5 px-5 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
                                 <MapPin size={16} className="text-black" />
@@ -222,7 +176,7 @@ const AdminDashboard = () => {
                             <div className="h-[calc(100%-38px)]">
                                 <MapContainer center={DEFAULT_CENTER} zoom={12} className="h-full w-full z-[1]">
                                     <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-                                    <MapLocationUpdater adminLocation={adminLocation} fallbackCenter={DEFAULT_CENTER} zoom={14} />
+                                    <MapLocationUpdater adminLocation={adminLocation} zoom={14} />
                                     {adminLocation && (
                                         <Marker position={[adminLocation.lat, adminLocation.lng]} icon={adminLocationIcon}>
                                             <Popup><b>You are here</b></Popup>
@@ -234,30 +188,23 @@ const AdminDashboard = () => {
                                             position={[parseFloat(iss.lat), parseFloat(iss.lng)]}
                                             eventHandlers={{ click: () => setSelectedIssueId(iss.id) }}
                                         >
-                                            <Popup><b>{iss.title}</b><br/><span className={`badge ${iss.status}`}>{iss.status.replace('_',' ')}</span></Popup>
+                                            <Popup><b>{iss.title}</b><br /><span className={`badge ${iss.status}`}>{iss.status.replace('_', ' ')}</span></Popup>
                                         </Marker>
                                     ))}
                                 </MapContainer>
                             </div>
                         </div>
 
-                        {/* Issue Details Panel — takes remaining ~55% */}
+                        {/* Issue Details Panel */}
                         <div className="glass !rounded-[18px] overflow-hidden flex-1 min-h-0 flex flex-col bg-white border-gray-200">
                             <div className="py-2.5 px-5 border-b border-gray-100 bg-gray-50 shrink-0 flex items-center justify-between">
-                                <h3 className="text-[0.9rem] font-bold text-black">
-                                    {selectedIssue ? 'Issue Details' : 'Select an Issue'}
-                                </h3>
-                                {selectedIssue && (
-                                    <span className={`badge ${selectedIssue.status} text-[0.7rem] py-0.5 px-2`}>{selectedIssue.status.replace('_', ' ')}</span>
-                                )}
+                                <h3 className="text-[0.9rem] font-bold text-black">{selectedIssue ? 'Issue Details' : 'Select an Issue'}</h3>
+                                {selectedIssue && <span className={`badge ${selectedIssue.status} text-[0.7rem] py-0.5 px-2`}>{selectedIssue.status.replace('_', ' ')}</span>}
                             </div>
                             <div className="p-5 flex-1">
                                 {selectedIssue ? (
                                     <div className="flex flex-col gap-4">
-                                        {/* Title */}
                                         <h3 className="text-[1.15rem] font-bold text-black leading-snug">{selectedIssue.title}</h3>
-
-                                        {/* Meta Grid */}
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                                                 <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Reported By</div>
@@ -268,37 +215,29 @@ const AdminDashboard = () => {
                                                 <div className="text-[0.85rem] font-semibold text-black capitalize">{selectedIssue.category}</div>
                                             </div>
                                         </div>
-
-                                        {/* Location */}
                                         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                                             <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-1">Location</div>
-                                            <div className="text-[0.85rem] text-black leading-relaxed">
-                                                {selectedIssue.address || (selectedIssue.lat && selectedIssue.lng ? `${selectedIssue.lat}, ${selectedIssue.lng}` : 'Location not available')}
-                                            </div>
+                                            <div className="text-[0.85rem] text-black leading-relaxed">{selectedIssue.address || `${selectedIssue.lat}, ${selectedIssue.lng}`}</div>
                                         </div>
-
-                                        {/* Description */}
                                         <div>
                                             <div className="text-[0.65rem] font-bold text-gray-500 uppercase tracking-wider mb-2">Description</div>
                                             <p className="text-[0.88rem] leading-[1.7] text-gray-600">{selectedIssue.description}</p>
                                         </div>
-
-                                        {/* Admin Actions */}
                                         <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 mt-auto">
                                             <div className="text-[0.65rem] font-bold text-gray-500 tracking-wider uppercase mb-1">Admin Actions</div>
                                             {selectedIssue.status === 'pending' && (
-                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'verified')}>
-                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} color="white" /> Approving...</> : 'Approve Issue'}
+                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updateStatusMutation.isPending ? 'btn-loading' : ''}`} disabled={updateStatusMutation.isPending} onClick={() => handleUpdateStatus(selectedIssue.id, 'verified')}>
+                                                    Approve Issue
                                                 </button>
                                             )}
                                             {selectedIssue.status === 'verified' && (
-                                                <button className={`btn-outline p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'in_progress')}>
-                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} /> Updating...</> : 'Mark In Progress'}
+                                                <button className={`btn-outline p-2.5 text-[0.85rem] justify-center ${updateStatusMutation.isPending ? 'btn-loading' : ''}`} disabled={updateStatusMutation.isPending} onClick={() => handleUpdateStatus(selectedIssue.id, 'in_progress')}>
+                                                    Mark In Progress
                                                 </button>
                                             )}
                                             {selectedIssue.status === 'in_progress' && (
-                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updatingId === selectedIssue.id ? 'btn-loading' : ''}`} disabled={updatingId === selectedIssue.id} onClick={() => updateStatus(selectedIssue.id, 'resolved')}>
-                                                    {updatingId === selectedIssue.id ? <><LoadingSpinner size={16} color="white" /> Resolving...</> : 'Mark Resolved'}
+                                                <button className={`btn-primary p-2.5 text-[0.85rem] justify-center ${updateStatusMutation.isPending ? 'btn-loading' : ''}`} disabled={updateStatusMutation.isPending} onClick={() => handleUpdateStatus(selectedIssue.id, 'resolved')}>
+                                                    Mark Resolved
                                                 </button>
                                             )}
                                             <button className="btn-secondary p-2.5 text-[0.85rem] justify-center" onClick={() => setSelectedIssueId(null)}>Close Details</button>
@@ -314,7 +253,6 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
